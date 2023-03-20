@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zicops-vilt-manager.fullname" . }}
+  labels:
+    app: {{ template "zicops-vilt-manager.name" . }}
+    chart: {{ template "zicops-vilt-manager.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.maxSurge }}
+  selector:
+    matchLabels:
+      app: {{ template "zicops-vilt-manager.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "zicops-vilt-manager.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        {{ $zcbcred := printf "%s/%s" .Values.zcServiceAccount.credential.dir .Values.zcServiceAccount.credential.file }}
+        {{ $zcbcert := printf "%s/%s" .Values.zcCertAstra.cert.dir .Values.zcCertAstra.cert.file }}
+        {{ $zcbcertca := printf "%s/%s" .Values.zcCertCAAstra.cert.dir .Values.zcCertCAAstra.cert.file }}
+        {{ $zcbkey := printf "%s/%s" .Values.zcAstraKey.key.dir .Values.zcAstraKey.key.file }}
+        - name: {{ .Chart.Name }}-asp
+          image: "{{ .Values.asp.repository }}:{{ .Values.asp.tag }}"
+          imagePullPolicy: {{ .Values.asp.pullPolicy }}
+          args: [
+            "--port={{ .Values.asp.port }}",
+            "--backend=http://127.0.0.1:{{ .Values.image.port }}",
+            "--mode={{ .Values.asp.arg.mode }}",
+          ]
+          volumeMounts:
+          - name: zicops-cc
+            mountPath: {{ .Values.zcServiceAccount.credential.dir | quote }}
+            readOnly: true
+          - name: zdevastracert
+            mountPath: {{ .Values.zcCertAstra.cert.dir | quote }}
+            readOnly: true
+          - name: zdevastracertca
+            mountPath: {{ .Values.zcCertCAAstra.cert.dir | quote }}
+            readOnly: true
+          - name: zdevastrakey
+            mountPath: {{ .Values.zcAstraKey.key.dir | quote }}
+            readOnly: true
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: {{ $zcbcred }}
+          - name: CASSANDRA_CERT
+            value: {{ $zcbcert }}
+          - name: CASSANDRA_CA
+            value: {{ $zcbcertca }}
+          - name: CASSANDRA_KEY
+            value: {{ $zcbkey }}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host | quote }}
+          - name: REDIS_PORT
+            value: {{ .Values.redis.port | quote }}
+          - name: REDIS_PASSWORD
+            value: {{ .Values.redis.password | quote }}
+          ports:
+            - name: um-prod
+              containerPort: {{ .Values.asp.port }}
+              protocol: TCP
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.image.port }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.image.health }}
+              port: {{ .Values.image.port }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 1  
+          volumeMounts:
+          - name: zicops-cc
+            mountPath: {{ .Values.zcServiceAccount.credential.dir | quote }}
+            readOnly: true
+          - name: zdevastracert
+            mountPath: {{ .Values.zcCertAstra.cert.dir | quote }}
+            readOnly: true
+          - name: zdevastracertca
+            mountPath: {{ .Values.zcCertCAAstra.cert.dir | quote }}
+            readOnly: true
+          - name: zdevastrakey
+            mountPath: {{ .Values.zcAstraKey.key.dir | quote }}
+            readOnly: true
+          env:
+          - name: PORT
+            value: {{ .Values.image.port | quote }}
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: {{ $zcbcred }}
+          - name: CASSANDRA_HOST
+            value: {{ .Values.astra.host | quote }}
+          - name: CASSANDRA_PORT
+            value: {{ .Values.astra.port | quote }}
+          - name: CASSANDRA_USERNAME
+            value: {{ .Values.astra.username | quote }}
+          - name: CASSANDRA_PASSWORD
+            value: {{ .Values.astra.password | quote }}
+          - name: CASSANDRA_CERT
+            value: {{ $zcbcert }}
+          - name: CASSANDRA_CA
+            value: {{ $zcbcertca }}
+          - name: CASSANDRA_KEY
+            value: {{ $zcbkey }}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host | quote }}
+          - name: REDIS_PORT
+            value: {{ .Values.redis.port | quote }}
+          - name: REDIS_PASSWORD
+            value: {{ .Values.redis.password | quote }}
+      volumes:
+      - name: zicops-cc
+        secret:
+          secretName: {{ .Values.zcServiceAccount.secret }}
+      - name: zdevastracert
+        secret:
+          secretName: {{ .Values.zcCertAstra.secret }}
+      - name: zdevastracertca
+        secret:
+          secretName: {{ .Values.zcCertCAAstra.secret }}
+      - name: zdevastrakey
+        secret:
+          secretName: {{ .Values.zcAstraKey.secret }}
