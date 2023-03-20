@@ -85,13 +85,13 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
     - name: replace environment variable in values.yaml
-      run:  envsubst '${GITHUB_SHA}' < k8s/zicops-user-manager/values.template.dev.yaml > k8s/zicops-user-manager/values.yaml
+      run:  envsubst '${GITHUB_SHA}' < k8s/zicops-vilt-manager/values.template.dev.yaml > k8s/zicops-vilt-manager/values.yaml
     - name: Deploy to zicops-prod-cost-one
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --zone $GKE_ZONE \
           --project $PROJECT_ID
-        helm upgrade -n staging zicops-user-manager k8s/zicops-user-manager --install --wait --atomic
+        helm upgrade -n staging zicops-vilt-manager k8s/zicops-vilt-manager --install --wait --atomic
 
   approval_prod:
     needs: deploy_staging
@@ -131,10 +131,10 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
     - name: replace environment variable in values.yaml
-      run:  envsubst '${GITHUB_SHA}' < k8s/zicops-user-manager/values.template.prod.yaml > k8s/zicops-user-manager/values.yaml
+      run:  envsubst '${GITHUB_SHA}' < k8s/zicops-vilt-manager/values.template.prod.yaml > k8s/zicops-vilt-manager/values.yaml
     - name: Deploy to zicops-prod-cost-one
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --zone $GKE_ZONE \
           --project $PROJECT_ID
-        helm upgrade -n production zicops-user-manager k8s/zicops-user-manager --install --wait --atomic
+        helm upgrade -n production zicops-vilt-manager k8s/zicops-vilt-manager --install --wait --atomic
