@@ -46,7 +46,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "zicops-vilt-manager.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "zicops-user-manager.name" . }}
+app.kubernetes.io/name: {{ include "zicops-vilt-manager.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
