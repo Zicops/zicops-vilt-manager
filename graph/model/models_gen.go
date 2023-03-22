@@ -2,21 +2,46 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type TopicClassroom struct {
+	ID                   *string   `json:"id"`
+	TopicID              *string   `json:"topic_id"`
+	Trainers             []*string `json:"trainers"`
+	Moderators           []*string `json:"moderators"`
+	TrainingStartTime    *string   `json:"training_start_time"`
+	TrainingEndTime      *string   `json:"training_end_time"`
+	Duration             *string   `json:"duration"`
+	Breaktime            *string   `json:"breaktime"`
+	Language             *string   `json:"language"`
+	IsScreenShareEnabled *bool     `json:"is_screen_share_enabled"`
+	IsChatEnabled        *bool     `json:"is_chat_enabled"`
+	IsMicrophoneEnabled  *bool     `json:"is_microphone_enabled"`
+	IsQaEnabled          *bool     `json:"is_qa_enabled"`
+	IsCameraEnabled      *bool     `json:"is_camera_enabled"`
+	IsOverrideConfig     *bool     `json:"is_override_config"`
+	CreatedAt            *string   `json:"created_at"`
+	CreatedBy            *string   `json:"created_by"`
+	UpdatedAt            *string   `json:"updated_at"`
+	UpdatedBy            *string   `json:"updated_by"`
+	Status               *string   `json:"status"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
-}
-
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type TopicClassroomInput struct {
+	ID                   *string   `json:"id"`
+	TopicID              *string   `json:"topic_id"`
+	Trainers             []*string `json:"trainers"`
+	Moderators           []*string `json:"moderators"`
+	TrainingStartTime    *string   `json:"training_start_time"`
+	TrainingEndTime      *string   `json:"training_end_time"`
+	Duration             *string   `json:"duration"`
+	Breaktime            *string   `json:"breaktime"`
+	Language             *string   `json:"language"`
+	IsScreenShareEnabled *bool     `json:"is_screen_share_enabled"`
+	IsChatEnabled        *bool     `json:"is_chat_enabled"`
+	IsMicrophoneEnabled  *bool     `json:"is_microphone_enabled"`
+	IsQaEnabled          *bool     `json:"is_qa_enabled"`
+	IsCameraEnabled      *bool     `json:"is_camera_enabled"`
+	IsOverrideConfig     *bool     `json:"is_override_config"`
+	Status               *string   `json:"status"`
 }
 
 type Vilt struct {

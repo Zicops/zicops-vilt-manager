@@ -31,11 +31,31 @@ func (r *mutationResolver) UpdateViltData(ctx context.Context, input *model.Vilt
 	return resp, nil
 }
 
+// CreateTopicClassroom is the resolver for the createTopicClassroom field.
+func (r *mutationResolver) CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput) (*model.TopicClassroom, error) {
+	resp, err := handlers.CreateTopicClassroom(ctx, input)
+	if err != nil {
+		log.Printf("Got error while creating topic classroom: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetViltData is the resolver for the getViltData field.
 func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error) {
 	resp, err := handlers.GetViltData(ctx, courseID)
 	if err != nil {
 		log.Printf("Got error while getting vilt data: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// GetTopicClassroom is the resolver for the getTopicClassroom field.
+func (r *queryResolver) GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error) {
+	resp, err := handlers.GetTopicClassroom(ctx, topicID)
+	if err != nil {
+		log.Printf("Got error while getting classroom data: %v", err)
 		return nil, err
 	}
 	return resp, nil
@@ -49,10 +69,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
