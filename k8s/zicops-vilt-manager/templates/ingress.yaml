@@ -16,7 +16,7 @@ spec:
   rules:
     - http:
         paths:
-          - path: /um/?(.*)
+          - path: /vm/?(.*)
             pathType: Prefix  
             backend:
               service:
