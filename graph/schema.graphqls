@@ -11,15 +11,44 @@ type User {
   name: String!
 }
 
-type Query {
-  todos: [Todo!]!
-}
-
 input NewTodo {
   text: String!
   userId: String!
 }
 
+input ViltInput {
+  lsp_id: String
+  course_id: String
+  no_of_learners: Int
+  trainers: [String]
+  moderators: [String]
+  course_start_date: String
+  course_end_date: String
+  curriculum: String
+  status: String
+}
+
+type Vilt {
+  lsp_id: String
+  course_id: String
+  no_of_learners: Int
+  trainers: [String]
+  moderators: [String]
+  course_start_date: String
+  course_end_date: String
+  curriculum: String
+  created_at: String
+  created_by: String
+  updated_at: String
+  updated_by: String
+  status: String
+}
+
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  createViltData(input: ViltInput): Vilt
+  updateViltData(input: ViltInput): Vilt
+}
+
+type Query {
+  getViltData(courseId: String): Vilt
 }
