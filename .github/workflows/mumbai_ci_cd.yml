@@ -2,12 +2,12 @@ name: UM CI/CD - GCP Mumbai South-1-a
 
 on:
   workflow_dispatch:
-  #pull_request:
-    #branches:
-      #- main
-  #push:
-   # branches:
-    #  - main
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
 
 env:
   PROJECT_ID: zicops-one
