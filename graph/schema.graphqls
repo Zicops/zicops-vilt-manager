@@ -1,20 +1,4 @@
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
-
-type User {
-  id: ID!
-  name: String!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
-}
 
 input ViltInput {
   lsp_id: String
@@ -44,11 +28,55 @@ type Vilt {
   status: String
 }
 
+input TopicClassroomInput {
+  id: String
+  topic_id: String
+  trainers: [String]
+  moderators: [String]
+  training_start_time: String
+  training_end_time: String
+  duration: String
+  breaktime: String
+  language: String
+  is_screen_share_enabled: Boolean
+  is_chat_enabled: Boolean
+  is_microphone_enabled: Boolean
+  is_qa_enabled: Boolean
+  is_camera_enabled: Boolean
+  is_override_config: Boolean
+  status: String
+}
+
+type TopicClassroom {
+  id: String
+  topic_id: String
+  trainers: [String]
+  moderators: [String]
+  training_start_time: String
+  training_end_time: String
+  duration: String
+  breaktime: String
+  language: String
+  is_screen_share_enabled: Boolean
+  is_chat_enabled: Boolean
+  is_microphone_enabled: Boolean
+  is_qa_enabled: Boolean
+  is_camera_enabled: Boolean
+  is_override_config: Boolean
+  created_at: String
+  created_by: String
+  updated_at: String
+  updated_by: String
+  status: String
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
+  createTopicClassroom(input: TopicClassroomInput): TopicClassroom
 }
 
 type Query {
   getViltData(courseId: String): Vilt
+  getTopicClassroom(topic_id: String): TopicClassroom
 }

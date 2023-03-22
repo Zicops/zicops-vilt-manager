@@ -45,24 +45,37 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		CreateViltData func(childComplexity int, input *model.ViltInput) int
-		UpdateViltData func(childComplexity int, input *model.ViltInput) int
+		CreateTopicClassroom func(childComplexity int, input *model.TopicClassroomInput) int
+		CreateViltData       func(childComplexity int, input *model.ViltInput) int
+		UpdateViltData       func(childComplexity int, input *model.ViltInput) int
 	}
 
 	Query struct {
-		GetViltData func(childComplexity int, courseID *string) int
+		GetTopicClassroom func(childComplexity int, topicID *string) int
+		GetViltData       func(childComplexity int, courseID *string) int
 	}
 
-	Todo struct {
-		Done func(childComplexity int) int
-		ID   func(childComplexity int) int
-		Text func(childComplexity int) int
-		User func(childComplexity int) int
-	}
-
-	User struct {
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
+	TopicClassroom struct {
+		Breaktime            func(childComplexity int) int
+		CreatedAt            func(childComplexity int) int
+		CreatedBy            func(childComplexity int) int
+		Duration             func(childComplexity int) int
+		ID                   func(childComplexity int) int
+		IsCameraEnabled      func(childComplexity int) int
+		IsChatEnabled        func(childComplexity int) int
+		IsMicrophoneEnabled  func(childComplexity int) int
+		IsOverrideConfig     func(childComplexity int) int
+		IsQaEnabled          func(childComplexity int) int
+		IsScreenShareEnabled func(childComplexity int) int
+		Language             func(childComplexity int) int
+		Moderators           func(childComplexity int) int
+		Status               func(childComplexity int) int
+		TopicID              func(childComplexity int) int
+		Trainers             func(childComplexity int) int
+		TrainingEndTime      func(childComplexity int) int
+		TrainingStartTime    func(childComplexity int) int
+		UpdatedAt            func(childComplexity int) int
+		UpdatedBy            func(childComplexity int) int
 	}
 
 	Vilt struct {
@@ -85,9 +98,11 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, error)
 	UpdateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, error)
+	CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput) (*model.TopicClassroom, error)
 }
 type QueryResolver interface {
 	GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error)
+	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
 }
 
 type executableSchema struct {
@@ -104,6 +119,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Mutation.createTopicClassroom":
+		if e.complexity.Mutation.CreateTopicClassroom == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTopicClassroom_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTopicClassroom(childComplexity, args["input"].(*model.TopicClassroomInput)), true
 
 	case "Mutation.createViltData":
 		if e.complexity.Mutation.CreateViltData == nil {
@@ -129,6 +156,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateViltData(childComplexity, args["input"].(*model.ViltInput)), true
 
+	case "Query.getTopicClassroom":
+		if e.complexity.Query.GetTopicClassroom == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTopicClassroom_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTopicClassroom(childComplexity, args["topic_id"].(*string)), true
+
 	case "Query.getViltData":
 		if e.complexity.Query.GetViltData == nil {
 			break
@@ -141,47 +180,145 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetViltData(childComplexity, args["courseId"].(*string)), true
 
-	case "Todo.done":
-		if e.complexity.Todo.Done == nil {
+	case "TopicClassroom.breaktime":
+		if e.complexity.TopicClassroom.Breaktime == nil {
 			break
 		}
 
-		return e.complexity.Todo.Done(childComplexity), true
+		return e.complexity.TopicClassroom.Breaktime(childComplexity), true
 
-	case "Todo.id":
-		if e.complexity.Todo.ID == nil {
+	case "TopicClassroom.created_at":
+		if e.complexity.TopicClassroom.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.Todo.ID(childComplexity), true
+		return e.complexity.TopicClassroom.CreatedAt(childComplexity), true
 
-	case "Todo.text":
-		if e.complexity.Todo.Text == nil {
+	case "TopicClassroom.created_by":
+		if e.complexity.TopicClassroom.CreatedBy == nil {
 			break
 		}
 
-		return e.complexity.Todo.Text(childComplexity), true
+		return e.complexity.TopicClassroom.CreatedBy(childComplexity), true
 
-	case "Todo.user":
-		if e.complexity.Todo.User == nil {
+	case "TopicClassroom.duration":
+		if e.complexity.TopicClassroom.Duration == nil {
 			break
 		}
 
-		return e.complexity.Todo.User(childComplexity), true
+		return e.complexity.TopicClassroom.Duration(childComplexity), true
 
-	case "User.id":
-		if e.complexity.User.ID == nil {
+	case "TopicClassroom.id":
+		if e.complexity.TopicClassroom.ID == nil {
 			break
 		}
 
-		return e.complexity.User.ID(childComplexity), true
+		return e.complexity.TopicClassroom.ID(childComplexity), true
 
-	case "User.name":
-		if e.complexity.User.Name == nil {
+	case "TopicClassroom.is_camera_enabled":
+		if e.complexity.TopicClassroom.IsCameraEnabled == nil {
 			break
 		}
 
-		return e.complexity.User.Name(childComplexity), true
+		return e.complexity.TopicClassroom.IsCameraEnabled(childComplexity), true
+
+	case "TopicClassroom.is_chat_enabled":
+		if e.complexity.TopicClassroom.IsChatEnabled == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.IsChatEnabled(childComplexity), true
+
+	case "TopicClassroom.is_microphone_enabled":
+		if e.complexity.TopicClassroom.IsMicrophoneEnabled == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.IsMicrophoneEnabled(childComplexity), true
+
+	case "TopicClassroom.is_override_config":
+		if e.complexity.TopicClassroom.IsOverrideConfig == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.IsOverrideConfig(childComplexity), true
+
+	case "TopicClassroom.is_qa_enabled":
+		if e.complexity.TopicClassroom.IsQaEnabled == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.IsQaEnabled(childComplexity), true
+
+	case "TopicClassroom.is_screen_share_enabled":
+		if e.complexity.TopicClassroom.IsScreenShareEnabled == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.IsScreenShareEnabled(childComplexity), true
+
+	case "TopicClassroom.language":
+		if e.complexity.TopicClassroom.Language == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.Language(childComplexity), true
+
+	case "TopicClassroom.moderators":
+		if e.complexity.TopicClassroom.Moderators == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.Moderators(childComplexity), true
+
+	case "TopicClassroom.status":
+		if e.complexity.TopicClassroom.Status == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.Status(childComplexity), true
+
+	case "TopicClassroom.topic_id":
+		if e.complexity.TopicClassroom.TopicID == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.TopicID(childComplexity), true
+
+	case "TopicClassroom.trainers":
+		if e.complexity.TopicClassroom.Trainers == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.Trainers(childComplexity), true
+
+	case "TopicClassroom.training_end_time":
+		if e.complexity.TopicClassroom.TrainingEndTime == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.TrainingEndTime(childComplexity), true
+
+	case "TopicClassroom.training_start_time":
+		if e.complexity.TopicClassroom.TrainingStartTime == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.TrainingStartTime(childComplexity), true
+
+	case "TopicClassroom.updated_at":
+		if e.complexity.TopicClassroom.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.UpdatedAt(childComplexity), true
+
+	case "TopicClassroom.updated_by":
+		if e.complexity.TopicClassroom.UpdatedBy == nil {
+			break
+		}
+
+		return e.complexity.TopicClassroom.UpdatedBy(childComplexity), true
 
 	case "Vilt.course_end_date":
 		if e.complexity.Vilt.CourseEndDate == nil {
@@ -282,7 +419,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputNewTodo,
+		ec.unmarshalInputTopicClassroomInput,
 		ec.unmarshalInputViltInput,
 	)
 	first := true
@@ -363,6 +500,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_createTopicClassroom_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.TopicClassroomInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOTopicClassroomInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroomInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createViltData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -405,6 +557,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTopicClassroom_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["topic_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic_id"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["topic_id"] = arg0
 	return args, nil
 }
 
@@ -621,6 +788,100 @@ func (ec *executionContext) fieldContext_Mutation_updateViltData(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createTopicClassroom(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTopicClassroom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTopicClassroom(rctx, fc.Args["input"].(*model.TopicClassroomInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TopicClassroom)
+	fc.Result = res
+	return ec.marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTopicClassroom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TopicClassroom_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_TopicClassroom_topic_id(ctx, field)
+			case "trainers":
+				return ec.fieldContext_TopicClassroom_trainers(ctx, field)
+			case "moderators":
+				return ec.fieldContext_TopicClassroom_moderators(ctx, field)
+			case "training_start_time":
+				return ec.fieldContext_TopicClassroom_training_start_time(ctx, field)
+			case "training_end_time":
+				return ec.fieldContext_TopicClassroom_training_end_time(ctx, field)
+			case "duration":
+				return ec.fieldContext_TopicClassroom_duration(ctx, field)
+			case "breaktime":
+				return ec.fieldContext_TopicClassroom_breaktime(ctx, field)
+			case "language":
+				return ec.fieldContext_TopicClassroom_language(ctx, field)
+			case "is_screen_share_enabled":
+				return ec.fieldContext_TopicClassroom_is_screen_share_enabled(ctx, field)
+			case "is_chat_enabled":
+				return ec.fieldContext_TopicClassroom_is_chat_enabled(ctx, field)
+			case "is_microphone_enabled":
+				return ec.fieldContext_TopicClassroom_is_microphone_enabled(ctx, field)
+			case "is_qa_enabled":
+				return ec.fieldContext_TopicClassroom_is_qa_enabled(ctx, field)
+			case "is_camera_enabled":
+				return ec.fieldContext_TopicClassroom_is_camera_enabled(ctx, field)
+			case "is_override_config":
+				return ec.fieldContext_TopicClassroom_is_override_config(ctx, field)
+			case "created_at":
+				return ec.fieldContext_TopicClassroom_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_TopicClassroom_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_TopicClassroom_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_TopicClassroom_updated_by(ctx, field)
+			case "status":
+				return ec.fieldContext_TopicClassroom_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TopicClassroom", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTopicClassroom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getViltData(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getViltData(ctx, field)
 	if err != nil {
@@ -695,6 +956,100 @@ func (ec *executionContext) fieldContext_Query_getViltData(ctx context.Context, 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getViltData_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getTopicClassroom(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getTopicClassroom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTopicClassroom(rctx, fc.Args["topic_id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TopicClassroom)
+	fc.Result = res
+	return ec.marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getTopicClassroom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TopicClassroom_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_TopicClassroom_topic_id(ctx, field)
+			case "trainers":
+				return ec.fieldContext_TopicClassroom_trainers(ctx, field)
+			case "moderators":
+				return ec.fieldContext_TopicClassroom_moderators(ctx, field)
+			case "training_start_time":
+				return ec.fieldContext_TopicClassroom_training_start_time(ctx, field)
+			case "training_end_time":
+				return ec.fieldContext_TopicClassroom_training_end_time(ctx, field)
+			case "duration":
+				return ec.fieldContext_TopicClassroom_duration(ctx, field)
+			case "breaktime":
+				return ec.fieldContext_TopicClassroom_breaktime(ctx, field)
+			case "language":
+				return ec.fieldContext_TopicClassroom_language(ctx, field)
+			case "is_screen_share_enabled":
+				return ec.fieldContext_TopicClassroom_is_screen_share_enabled(ctx, field)
+			case "is_chat_enabled":
+				return ec.fieldContext_TopicClassroom_is_chat_enabled(ctx, field)
+			case "is_microphone_enabled":
+				return ec.fieldContext_TopicClassroom_is_microphone_enabled(ctx, field)
+			case "is_qa_enabled":
+				return ec.fieldContext_TopicClassroom_is_qa_enabled(ctx, field)
+			case "is_camera_enabled":
+				return ec.fieldContext_TopicClassroom_is_camera_enabled(ctx, field)
+			case "is_override_config":
+				return ec.fieldContext_TopicClassroom_is_override_config(ctx, field)
+			case "created_at":
+				return ec.fieldContext_TopicClassroom_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_TopicClassroom_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_TopicClassroom_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_TopicClassroom_updated_by(ctx, field)
+			case "status":
+				return ec.fieldContext_TopicClassroom_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TopicClassroom", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getTopicClassroom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -830,8 +1185,8 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_id(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Todo_id(ctx, field)
+func (ec *executionContext) _TopicClassroom_id(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -851,63 +1206,16 @@ func (ec *executionContext) _Todo_id(ctx context.Context, field graphql.Collecte
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Todo_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TopicClassroom_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Todo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Todo_text(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Todo_text(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Text, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Todo_text(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Todo",
+		Object:     "TopicClassroom",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -918,8 +1226,8 @@ func (ec *executionContext) fieldContext_Todo_text(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_done(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Todo_done(ctx, field)
+func (ec *executionContext) _TopicClassroom_topic_id(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_topic_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -932,26 +1240,351 @@ func (ec *executionContext) _Todo_done(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Done, nil
+		return obj.TopicID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Todo_done(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TopicClassroom_topic_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Todo",
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_trainers(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_trainers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Trainers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_trainers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_moderators(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_moderators(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Moderators, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_moderators(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_training_start_time(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_training_start_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TrainingStartTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_training_start_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_training_end_time(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_training_end_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TrainingEndTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_training_end_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_duration(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_duration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_breaktime(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_breaktime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Breaktime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_breaktime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_language(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_language(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Language, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_language(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_is_screen_share_enabled(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_is_screen_share_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsScreenShareEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_is_screen_share_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -962,8 +1595,8 @@ func (ec *executionContext) fieldContext_Todo_done(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Todo_user(ctx, field)
+func (ec *executionContext) _TopicClassroom_is_chat_enabled(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_is_chat_enabled(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -976,44 +1609,35 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
+		return obj.IsChatEnabled, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Todo_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TopicClassroom_is_chat_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Todo",
+		Object:     "TopicClassroom",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "name":
-				return ec.fieldContext_User_name(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_id(ctx, field)
+func (ec *executionContext) _TopicClassroom_is_microphone_enabled(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_is_microphone_enabled(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1026,38 +1650,35 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.IsMicrophoneEnabled, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TopicClassroom_is_microphone_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "User",
+		Object:     "TopicClassroom",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_name(ctx, field)
+func (ec *executionContext) _TopicClassroom_is_qa_enabled(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_is_qa_enabled(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1070,26 +1691,310 @@ func (ec *executionContext) _User_name(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
+		return obj.IsQaEnabled, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TopicClassroom_is_qa_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "User",
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_is_camera_enabled(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_is_camera_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsCameraEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_is_camera_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_is_override_config(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_is_override_config(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsOverrideConfig, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_is_override_config(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_created_at(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_created_by(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_created_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_created_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_updated_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_updated_by(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_updated_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_updated_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicClassroom_status(ctx context.Context, field graphql.CollectedField, obj *model.TopicClassroom) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicClassroom_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicClassroom_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicClassroom",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3406,33 +4311,145 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj interface{}) (model.NewTodo, error) {
-	var it model.NewTodo
+func (ec *executionContext) unmarshalInputTopicClassroomInput(ctx context.Context, obj interface{}) (model.TopicClassroomInput, error) {
+	var it model.TopicClassroomInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"text", "userId"}
+	fieldsInOrder := [...]string{"id", "topic_id", "trainers", "moderators", "training_start_time", "training_end_time", "duration", "breaktime", "language", "is_screen_share_enabled", "is_chat_enabled", "is_microphone_enabled", "is_qa_enabled", "is_camera_enabled", "is_override_config", "status"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "text":
+		case "id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
-			it.Text, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "userId":
+		case "topic_id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-			it.UserID, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic_id"))
+			it.TopicID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "trainers":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("trainers"))
+			it.Trainers, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "moderators":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moderators"))
+			it.Moderators, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "training_start_time":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("training_start_time"))
+			it.TrainingStartTime, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "training_end_time":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("training_end_time"))
+			it.TrainingEndTime, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+			it.Duration, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "breaktime":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("breaktime"))
+			it.Breaktime, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "language":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("language"))
+			it.Language, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_screen_share_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_screen_share_enabled"))
+			it.IsScreenShareEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_chat_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_chat_enabled"))
+			it.IsChatEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_microphone_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_microphone_enabled"))
+			it.IsMicrophoneEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_qa_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_qa_enabled"))
+			it.IsQaEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_camera_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_camera_enabled"))
+			it.IsCameraEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_override_config":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_override_config"))
+			it.IsOverrideConfig, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "status":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3573,6 +4590,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_updateViltData(ctx, field)
 			})
 
+		case "createTopicClassroom":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTopicClassroom(ctx, field)
+			})
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3623,6 +4646,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getTopicClassroom":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTopicClassroom(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -3646,79 +4689,96 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var todoImplementors = []string{"Todo"}
+var topicClassroomImplementors = []string{"TopicClassroom"}
 
-func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj *model.Todo) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, todoImplementors)
+func (ec *executionContext) _TopicClassroom(ctx context.Context, sel ast.SelectionSet, obj *model.TopicClassroom) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, topicClassroomImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Todo")
+			out.Values[i] = graphql.MarshalString("TopicClassroom")
 		case "id":
 
-			out.Values[i] = ec._Todo_id(ctx, field, obj)
+			out.Values[i] = ec._TopicClassroom_id(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "text":
+		case "topic_id":
 
-			out.Values[i] = ec._Todo_text(ctx, field, obj)
+			out.Values[i] = ec._TopicClassroom_topic_id(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "done":
+		case "trainers":
 
-			out.Values[i] = ec._Todo_done(ctx, field, obj)
+			out.Values[i] = ec._TopicClassroom_trainers(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "user":
+		case "moderators":
 
-			out.Values[i] = ec._Todo_user(ctx, field, obj)
+			out.Values[i] = ec._TopicClassroom_moderators(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
+		case "training_start_time":
 
-var userImplementors = []string{"User"}
+			out.Values[i] = ec._TopicClassroom_training_start_time(ctx, field, obj)
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("User")
-		case "id":
+		case "training_end_time":
 
-			out.Values[i] = ec._User_id(ctx, field, obj)
+			out.Values[i] = ec._TopicClassroom_training_end_time(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "name":
+		case "duration":
 
-			out.Values[i] = ec._User_name(ctx, field, obj)
+			out.Values[i] = ec._TopicClassroom_duration(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+		case "breaktime":
+
+			out.Values[i] = ec._TopicClassroom_breaktime(ctx, field, obj)
+
+		case "language":
+
+			out.Values[i] = ec._TopicClassroom_language(ctx, field, obj)
+
+		case "is_screen_share_enabled":
+
+			out.Values[i] = ec._TopicClassroom_is_screen_share_enabled(ctx, field, obj)
+
+		case "is_chat_enabled":
+
+			out.Values[i] = ec._TopicClassroom_is_chat_enabled(ctx, field, obj)
+
+		case "is_microphone_enabled":
+
+			out.Values[i] = ec._TopicClassroom_is_microphone_enabled(ctx, field, obj)
+
+		case "is_qa_enabled":
+
+			out.Values[i] = ec._TopicClassroom_is_qa_enabled(ctx, field, obj)
+
+		case "is_camera_enabled":
+
+			out.Values[i] = ec._TopicClassroom_is_camera_enabled(ctx, field, obj)
+
+		case "is_override_config":
+
+			out.Values[i] = ec._TopicClassroom_is_override_config(ctx, field, obj)
+
+		case "created_at":
+
+			out.Values[i] = ec._TopicClassroom_created_at(ctx, field, obj)
+
+		case "created_by":
+
+			out.Values[i] = ec._TopicClassroom_created_by(ctx, field, obj)
+
+		case "updated_at":
+
+			out.Values[i] = ec._TopicClassroom_updated_at(ctx, field, obj)
+
+		case "updated_by":
+
+			out.Values[i] = ec._TopicClassroom_updated_by(ctx, field, obj)
+
+		case "status":
+
+			out.Values[i] = ec._TopicClassroom_status(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4136,21 +5196,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4164,16 +5209,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -4517,6 +5552,21 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx context.Context, sel ast.SelectionSet, v *model.TopicClassroom) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TopicClassroom(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTopicClassroomInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroomInput(ctx context.Context, v interface{}) (*model.TopicClassroomInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTopicClassroomInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOVilt2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx context.Context, sel ast.SelectionSet, v *model.Vilt) graphql.Marshaler {
