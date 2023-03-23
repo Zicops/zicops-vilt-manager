@@ -11,7 +11,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/zicops/zicops-vilt-manager/global"
 	"github.com/zicops/zicops-vilt-manager/graph"
 	generated "github.com/zicops/zicops-vilt-manager/graph"
 
@@ -34,38 +33,10 @@ func CCRouter(restRouter *gin.Engine) (*gin.Engine, error) {
 
 	})
 	restRouter.GET("/healthz", HealthCheckHandler)
-	restRouter.POST("/reset-password", ResetPasswordHandler)
 	// create group for restRouter
 	version1 := restRouter.Group("/api/v1")
 	version1.POST("/query", graphqlHandler())
 	return restRouter, nil
-}
-
-type ResetPasswordRequest struct {
-	Email string `json:"email"`
-}
-
-func ResetPasswordHandler(c *gin.Context) {
-	// get the request body
-	var resetPasswordRequest ResetPasswordRequest
-	if err := c.ShouldBindJSON(&resetPasswordRequest); err != nil {
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	email := resetPasswordRequest.Email
-	origin := c.Request.Header.Get("Origin")
-	ctx := c.Request.Context()
-	passwordReset, err := global.IDP.GetResetPasswordURL(ctx, email, origin, origin)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	err = global.SGClient.SendPasswordResetEmail(email, passwordReset, "")
-	if err != nil {
-		log.Error(err)
-		return
-	}
 }
 
 func graphqlHandler() gin.HandlerFunc {

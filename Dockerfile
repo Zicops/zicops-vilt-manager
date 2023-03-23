@@ -19,6 +19,6 @@ LABEL maintainer="Puneet Saraswat <puneet.saraswat10074@gmail.com>"
 RUN apt-get update -y -qq
 
 COPY --from=builder /go/src/app/zicops-vilt-manager /usr/bin/
-EXPOSE 8094
+EXPOSE 8095
 
 ENTRYPOINT ["/usr/bin/zicops-vilt-manager"]

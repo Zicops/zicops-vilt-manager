@@ -12,7 +12,7 @@ image:
   tag: ${GITHUB_SHA}
   pullPolicy: Always
   health: /healthz
-  port: 8094
+  port: 8095
 
 #Authorization reverse proxy details
 asp:
