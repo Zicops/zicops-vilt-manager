@@ -46,7 +46,6 @@ func main() {
 		log.Infof("Redis connection successful")
 	}
 
-	log.Infof("zicops vilt manager initialization complete")
 	port := 8095
 	portFromEnv := os.Getenv("PORT")
 	port, err = strconv.Atoi(portFromEnv)
@@ -71,6 +70,7 @@ func main() {
 	bootUpErrors := make(chan error, 1)
 	go monitorSystem(cancel, bootUpErrors)
 	go checkAndInitCassandraSession()
+	log.Infof("zicops vilt manager initialization complete")
 	controller.CCBackendController(ctx, port, bootUpErrors, r)
 }
 
@@ -94,6 +94,7 @@ func checkAndInitCassandraSession() {
 	} else {
 		log.Infof("Redis connection successful")
 	}
+	log.Infof("Connecting to cassandra")
 	cassPool := cassandra.GetCassandraPoolInstance()
 	global.CassPool = cassPool
 	_, err1 := global.CassPool.GetSession(ctx, "coursez")
