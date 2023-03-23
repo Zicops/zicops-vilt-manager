@@ -74,9 +74,11 @@ type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
   createTopicClassroom(input: TopicClassroomInput): TopicClassroom
+  updateTopicClassroom(input: TopicClassroomInput): TopicClassroom
 }
 
 type Query {
   getViltData(courseId: String): Vilt
   getTopicClassroom(topic_id: String): TopicClassroom
+  getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
 }

@@ -47,12 +47,14 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateTopicClassroom func(childComplexity int, input *model.TopicClassroomInput) int
 		CreateViltData       func(childComplexity int, input *model.ViltInput) int
+		UpdateTopicClassroom func(childComplexity int, input *model.TopicClassroomInput) int
 		UpdateViltData       func(childComplexity int, input *model.ViltInput) int
 	}
 
 	Query struct {
-		GetTopicClassroom func(childComplexity int, topicID *string) int
-		GetViltData       func(childComplexity int, courseID *string) int
+		GetTopicClassroom            func(childComplexity int, topicID *string) int
+		GetTopicClassroomsByTopicIds func(childComplexity int, topicIds []*string) int
+		GetViltData                  func(childComplexity int, courseID *string) int
 	}
 
 	TopicClassroom struct {
@@ -99,10 +101,12 @@ type MutationResolver interface {
 	CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, error)
 	UpdateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, error)
 	CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput) (*model.TopicClassroom, error)
+	UpdateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput) (*model.TopicClassroom, error)
 }
 type QueryResolver interface {
 	GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error)
 	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
+	GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error)
 }
 
 type executableSchema struct {
@@ -144,6 +148,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateViltData(childComplexity, args["input"].(*model.ViltInput)), true
 
+	case "Mutation.updateTopicClassroom":
+		if e.complexity.Mutation.UpdateTopicClassroom == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTopicClassroom_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTopicClassroom(childComplexity, args["input"].(*model.TopicClassroomInput)), true
+
 	case "Mutation.updateViltData":
 		if e.complexity.Mutation.UpdateViltData == nil {
 			break
@@ -167,6 +183,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetTopicClassroom(childComplexity, args["topic_id"].(*string)), true
+
+	case "Query.getTopicClassroomsByTopicIds":
+		if e.complexity.Query.GetTopicClassroomsByTopicIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTopicClassroomsByTopicIds_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTopicClassroomsByTopicIds(childComplexity, args["topic_ids"].([]*string)), true
 
 	case "Query.getViltData":
 		if e.complexity.Query.GetViltData == nil {
@@ -530,6 +558,21 @@ func (ec *executionContext) field_Mutation_createViltData_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateTopicClassroom_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.TopicClassroomInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOTopicClassroomInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroomInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateViltData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -572,6 +615,21 @@ func (ec *executionContext) field_Query_getTopicClassroom_args(ctx context.Conte
 		}
 	}
 	args["topic_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTopicClassroomsByTopicIds_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*string
+	if tmp, ok := rawArgs["topic_ids"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic_ids"))
+		arg0, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["topic_ids"] = arg0
 	return args, nil
 }
 
@@ -882,6 +940,100 @@ func (ec *executionContext) fieldContext_Mutation_createTopicClassroom(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateTopicClassroom(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateTopicClassroom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTopicClassroom(rctx, fc.Args["input"].(*model.TopicClassroomInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TopicClassroom)
+	fc.Result = res
+	return ec.marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateTopicClassroom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TopicClassroom_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_TopicClassroom_topic_id(ctx, field)
+			case "trainers":
+				return ec.fieldContext_TopicClassroom_trainers(ctx, field)
+			case "moderators":
+				return ec.fieldContext_TopicClassroom_moderators(ctx, field)
+			case "training_start_time":
+				return ec.fieldContext_TopicClassroom_training_start_time(ctx, field)
+			case "training_end_time":
+				return ec.fieldContext_TopicClassroom_training_end_time(ctx, field)
+			case "duration":
+				return ec.fieldContext_TopicClassroom_duration(ctx, field)
+			case "breaktime":
+				return ec.fieldContext_TopicClassroom_breaktime(ctx, field)
+			case "language":
+				return ec.fieldContext_TopicClassroom_language(ctx, field)
+			case "is_screen_share_enabled":
+				return ec.fieldContext_TopicClassroom_is_screen_share_enabled(ctx, field)
+			case "is_chat_enabled":
+				return ec.fieldContext_TopicClassroom_is_chat_enabled(ctx, field)
+			case "is_microphone_enabled":
+				return ec.fieldContext_TopicClassroom_is_microphone_enabled(ctx, field)
+			case "is_qa_enabled":
+				return ec.fieldContext_TopicClassroom_is_qa_enabled(ctx, field)
+			case "is_camera_enabled":
+				return ec.fieldContext_TopicClassroom_is_camera_enabled(ctx, field)
+			case "is_override_config":
+				return ec.fieldContext_TopicClassroom_is_override_config(ctx, field)
+			case "created_at":
+				return ec.fieldContext_TopicClassroom_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_TopicClassroom_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_TopicClassroom_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_TopicClassroom_updated_by(ctx, field)
+			case "status":
+				return ec.fieldContext_TopicClassroom_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TopicClassroom", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateTopicClassroom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getViltData(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getViltData(ctx, field)
 	if err != nil {
@@ -1050,6 +1202,100 @@ func (ec *executionContext) fieldContext_Query_getTopicClassroom(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getTopicClassroom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getTopicClassroomsByTopicIds(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getTopicClassroomsByTopicIds(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTopicClassroomsByTopicIds(rctx, fc.Args["topic_ids"].([]*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TopicClassroom)
+	fc.Result = res
+	return ec.marshalOTopicClassroom2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getTopicClassroomsByTopicIds(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TopicClassroom_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_TopicClassroom_topic_id(ctx, field)
+			case "trainers":
+				return ec.fieldContext_TopicClassroom_trainers(ctx, field)
+			case "moderators":
+				return ec.fieldContext_TopicClassroom_moderators(ctx, field)
+			case "training_start_time":
+				return ec.fieldContext_TopicClassroom_training_start_time(ctx, field)
+			case "training_end_time":
+				return ec.fieldContext_TopicClassroom_training_end_time(ctx, field)
+			case "duration":
+				return ec.fieldContext_TopicClassroom_duration(ctx, field)
+			case "breaktime":
+				return ec.fieldContext_TopicClassroom_breaktime(ctx, field)
+			case "language":
+				return ec.fieldContext_TopicClassroom_language(ctx, field)
+			case "is_screen_share_enabled":
+				return ec.fieldContext_TopicClassroom_is_screen_share_enabled(ctx, field)
+			case "is_chat_enabled":
+				return ec.fieldContext_TopicClassroom_is_chat_enabled(ctx, field)
+			case "is_microphone_enabled":
+				return ec.fieldContext_TopicClassroom_is_microphone_enabled(ctx, field)
+			case "is_qa_enabled":
+				return ec.fieldContext_TopicClassroom_is_qa_enabled(ctx, field)
+			case "is_camera_enabled":
+				return ec.fieldContext_TopicClassroom_is_camera_enabled(ctx, field)
+			case "is_override_config":
+				return ec.fieldContext_TopicClassroom_is_override_config(ctx, field)
+			case "created_at":
+				return ec.fieldContext_TopicClassroom_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_TopicClassroom_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_TopicClassroom_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_TopicClassroom_updated_by(ctx, field)
+			case "status":
+				return ec.fieldContext_TopicClassroom_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TopicClassroom", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getTopicClassroomsByTopicIds_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4596,6 +4842,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_createTopicClassroom(ctx, field)
 			})
 
+		case "updateTopicClassroom":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateTopicClassroom(ctx, field)
+			})
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4656,6 +4908,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getTopicClassroom(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getTopicClassroomsByTopicIds":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTopicClassroomsByTopicIds(ctx, field)
 				return res
 			}
 
@@ -5552,6 +5824,47 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTopicClassroom2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx context.Context, sel ast.SelectionSet, v []*model.TopicClassroom) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx context.Context, sel ast.SelectionSet, v *model.TopicClassroom) graphql.Marshaler {
