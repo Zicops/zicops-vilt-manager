@@ -69,7 +69,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	bootUpErrors := make(chan error, 1)
 	go monitorSystem(cancel, bootUpErrors)
-	go checkAndInitCassandraSession()
+	checkAndInitCassandraSession()
 	log.Infof("zicops vilt manager initialization complete")
 	controller.CCBackendController(ctx, port, bootUpErrors, r)
 }
