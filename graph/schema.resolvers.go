@@ -41,6 +41,16 @@ func (r *mutationResolver) CreateTopicClassroom(ctx context.Context, input *mode
 	return resp, nil
 }
 
+// UpdateTopicClassroom is the resolver for the updateTopicClassroom field.
+func (r *mutationResolver) UpdateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput) (*model.TopicClassroom, error) {
+	resp, err := handlers.UpdateTopicClassroom(ctx, input)
+	if err != nil {
+		log.Printf("Got error while updating topic classroom: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetViltData is the resolver for the getViltData field.
 func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error) {
 	resp, err := handlers.GetViltData(ctx, courseID)
@@ -56,6 +66,16 @@ func (r *queryResolver) GetTopicClassroom(ctx context.Context, topicID *string) 
 	resp, err := handlers.GetTopicClassroom(ctx, topicID)
 	if err != nil {
 		log.Printf("Got error while getting classroom data: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// GetTopicClassroomsByTopicIds is the resolver for the getTopicClassroomsByTopicIds field.
+func (r *queryResolver) GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error) {
+	resp, err := handlers.GetTopicClassroomsByTopicIds(ctx, topicIds)
+	if err != nil {
+		log.Printf("Got error while getting topics: %v", err)
 		return nil, err
 	}
 	return resp, nil

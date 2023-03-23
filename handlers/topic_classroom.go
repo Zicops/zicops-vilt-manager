@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/zicops/contracts/viltz"
 	"github.com/zicops/zicops-vilt-manager/global"
@@ -206,4 +209,267 @@ func GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassr
 		Status:               &topic.Status,
 	}
 	return &res, nil
+}
+
+func UpdateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput) (*model.TopicClassroom, error) {
+	if input.TopicID == nil {
+		return nil, errors.New("please mention topic id")
+	}
+	claims, err := identity.GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	email := claims["email"].(string)
+
+	sesion, err := global.CassPool.GetSession(ctx, "viltz")
+	if err != nil {
+		return nil, err
+	}
+	CassSession := sesion
+	qryStr := fmt.Sprintf(`SELECT * FROM viltz.topic_classroom WHERE topic_id='%s' ALLOW FILTERING`, *input.TopicID)
+
+	getTopicsData := func() (topicsData []viltz.TopicClassroom, err error) {
+		q := CassSession.Query(qryStr, nil)
+		defer q.Release()
+		iter := q.Iter()
+		return topicsData, iter.Select(&topicsData)
+	}
+
+	topics, err := getTopicsData()
+	if err != nil {
+		return nil, err
+	}
+	if len(topics) == 0 {
+		return nil, nil
+	}
+	topic := topics[0]
+	var updatedCols []string
+	if input.Breaktime != nil {
+		topic.Breaktime = *input.Breaktime
+		updatedCols = append(updatedCols, "breaktime")
+	}
+
+	if input.Duration != nil {
+		duration, err := strconv.Atoi(*input.Duration)
+		if err != nil {
+			return nil, err
+		}
+		topic.Duration = int64(duration)
+		updatedCols = append(updatedCols, "duration")
+	}
+
+	if input.IsCameraEnabled != nil {
+		topic.IsCameraEnabled = *input.IsCameraEnabled
+		updatedCols = append(updatedCols, "is_camera_enabled")
+	}
+	if input.IsChatEnabled != nil {
+		topic.IsChatEnabled = *input.IsChatEnabled
+		updatedCols = append(updatedCols, "is_chat_enabled")
+	}
+	if input.IsMicrophoneEnabled != nil {
+		topic.IsMicrophoneEnabled = *input.IsMicrophoneEnabled
+		updatedCols = append(updatedCols, "is_microphone_enabled")
+	}
+	if input.IsOverrideConfig != nil {
+		topic.IsOverrideConfig = *input.IsOverrideConfig
+		updatedCols = append(updatedCols, "is_override_config")
+	}
+	if input.IsQaEnabled != nil {
+		topic.IsQAEnabled = *input.IsQaEnabled
+		updatedCols = append(updatedCols, "is_qa_enabled")
+	}
+	if input.IsScreenShareEnabled != nil {
+		topic.IsScreenShareEnabled = *input.IsScreenShareEnabled
+		updatedCols = append(updatedCols, "is_screen_share_enabled")
+	}
+	if input.Language != nil {
+		topic.Language = *input.Language
+		updatedCols = append(updatedCols, "language")
+	}
+	if input.Moderators != nil {
+		var tmp []string
+		for _, vv := range input.Moderators {
+			v := vv
+			if v == nil {
+				continue
+			}
+			tmp = append(tmp, *v)
+		}
+		topic.Moderator = tmp
+		updatedCols = append(updatedCols, "moderator")
+	}
+	if input.Status != nil {
+		topic.Status = *input.Status
+		updatedCols = append(updatedCols, "status")
+	}
+	if input.Trainers != nil {
+		var tmp []string
+		for _, vv := range input.Trainers {
+			v := vv
+			if v == nil {
+				continue
+			}
+			tmp = append(tmp, *v)
+		}
+
+		topic.Trainer = tmp
+		updatedCols = append(updatedCols, "trainer")
+	}
+	if input.TrainingEndTime != nil {
+		tet, err := strconv.Atoi(*input.TrainingEndTime)
+		if err != nil {
+			return nil, err
+		}
+		topic.TrainingEndTime = int64(tet)
+		updatedCols = append(updatedCols, "training_end_time")
+	}
+	if input.TrainingStartTime != nil {
+		tst, err := strconv.Atoi(*input.TrainingStartTime)
+		if err != nil {
+			return nil, err
+		}
+		topic.TrainingStartTime = int64(tst)
+		updatedCols = append(updatedCols, "training_start_time")
+	}
+
+	ua := time.Now().Unix()
+	if len(updatedCols) > 0 {
+		topic.UpdatedAt = ua
+		topic.UpdatedBy = email
+		updatedCols = append(updatedCols, "updated_at", "updated_by")
+		stmt, names := viltz.TopicClassroomTable.Update(updatedCols...)
+		updateQuery := CassSession.Query(stmt, names).BindStruct(&topic)
+		if err = updateQuery.ExecRelease(); err != nil {
+			log.Printf("Got error while updating topic classroom data: %v", err)
+			return nil, err
+		}
+	}
+
+	var trainers []*string
+	for _, vv := range topic.Trainer {
+		v := vv
+		trainers = append(trainers, &v)
+	}
+	var moderators []*string
+	for _, vv := range topic.Moderator {
+		v := vv
+		moderators = append(moderators, &v)
+	}
+	start := strconv.Itoa(int(topic.TrainingStartTime))
+	end := strconv.Itoa(int(topic.TrainingEndTime))
+	duration := strconv.Itoa(int(topic.Duration))
+	createdAt := strconv.Itoa(int(topic.CreatedAt))
+	updatedAt := strconv.Itoa(int(ua))
+	res := model.TopicClassroom{
+		ID:                   &topic.Id,
+		TopicID:              &topic.TopicId,
+		Trainers:             trainers,
+		Moderators:           moderators,
+		TrainingStartTime:    &start,
+		TrainingEndTime:      &end,
+		Duration:             &duration,
+		Breaktime:            &topic.Breaktime,
+		Language:             &topic.Language,
+		IsScreenShareEnabled: &topic.IsScreenShareEnabled,
+		IsChatEnabled:        &topic.IsChatEnabled,
+		IsMicrophoneEnabled:  &topic.IsMicrophoneEnabled,
+		IsQaEnabled:          &topic.IsQAEnabled,
+		IsCameraEnabled:      &topic.IsCameraEnabled,
+		IsOverrideConfig:     &topic.IsOverrideConfig,
+		CreatedAt:            &createdAt,
+		CreatedBy:            &topic.CreatedBy,
+		UpdatedAt:            &updatedAt,
+		UpdatedBy:            &email,
+		Status:               &topic.Status,
+	}
+	return &res, nil
+}
+
+func GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error) {
+	if len(topicIds) == 0 {
+		return nil, nil
+	}
+	_, err := identity.GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := global.CassPool.GetSession(ctx, "viltz")
+	if err != nil {
+		return nil, err
+	}
+	CassSession := session
+
+	var wg sync.WaitGroup
+	res := make([]*model.TopicClassroom, len(topicIds))
+	for kk, vv := range topicIds {
+		v := vv
+		k := kk
+		if v == nil {
+			continue
+		}
+		wg.Add(1)
+		go func(topicId string, val int) {
+			defer wg.Done()
+			qryStr := fmt.Sprintf(`SELECT * FROM viltz.topic_classroom WHERE topic_id='%s' ALLOW FILTERING`, topicId)
+			getTopicDetails := func() (topicDetails []viltz.TopicClassroom, err error) {
+				q := CassSession.Query(qryStr, nil)
+				defer q.Release()
+				iter := q.Iter()
+				return topicDetails, iter.Select(&topicDetails)
+			}
+			topics, err := getTopicDetails()
+			if err != nil {
+				log.Printf("Got error while getting topic details: %v", err)
+				return
+			}
+			if len(topics) == 0 {
+				return
+			}
+
+			topic := topics[0]
+
+			var trainers []*string
+			for _, vv := range topic.Trainer {
+				v := vv
+				trainers = append(trainers, &v)
+			}
+			var moderators []*string
+			for _, vv := range topic.Moderator {
+				v := vv
+				moderators = append(moderators, &v)
+			}
+			tst := strconv.Itoa(int(topic.TrainingStartTime))
+			tet := strconv.Itoa(int(topic.TrainingEndTime))
+			duration := strconv.Itoa(int(topic.Duration))
+			ca := strconv.Itoa(int(topic.CreatedAt))
+			ua := strconv.Itoa(int(topic.UpdatedAt))
+			tmp := model.TopicClassroom{
+				ID:                   &topic.Id,
+				TopicID:              &topic.TopicId,
+				Trainers:             trainers,
+				Moderators:           moderators,
+				TrainingStartTime:    &tst,
+				TrainingEndTime:      &tet,
+				Duration:             &duration,
+				Breaktime:            &topic.Breaktime,
+				Language:             &topic.Language,
+				IsScreenShareEnabled: &topic.IsScreenShareEnabled,
+				IsChatEnabled:        &topic.IsChatEnabled,
+				IsMicrophoneEnabled:  &topic.IsMicrophoneEnabled,
+				IsQaEnabled:          &topic.IsQAEnabled,
+				IsCameraEnabled:      &topic.IsCameraEnabled,
+				IsOverrideConfig:     &topic.IsOverrideConfig,
+				CreatedAt:            &ca,
+				CreatedBy:            &topic.CreatedBy,
+				UpdatedAt:            &ua,
+				UpdatedBy:            &topic.UpdatedBy,
+				Status:               &topic.Status,
+			}
+
+			res[val] = &tmp
+		}(*v, k)
+	}
+	wg.Wait()
+	return res, nil
 }
