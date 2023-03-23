@@ -47,8 +47,9 @@ func main() {
 	}
 
 	log.Infof("zicops vilt manager initialization complete")
+	port := 8095
 	portFromEnv := os.Getenv("PORT")
-	port, err := strconv.Atoi(portFromEnv)
+	port, err = strconv.Atoi(portFromEnv)
 	if err != nil {
 		port = 8095
 	}

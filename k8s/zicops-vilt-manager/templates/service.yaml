@@ -11,9 +11,9 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: um-prod
+      targetPort: vm-prod
       protocol: TCP
-      name: um-prod
+      name: vm-prod
   selector:
     app: {{ template "zicops-vilt-manager.name" . }}
     release: {{ .Release.Name }}

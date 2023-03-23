@@ -64,7 +64,7 @@ spec:
           - name: REDIS_PASSWORD
             value: {{ .Values.redis.password | quote }}
           ports:
-            - name: um-prod
+            - name: vm-prod
               containerPort: {{ .Values.asp.port }}
               protocol: TCP
         - name: {{ .Chart.Name }}
