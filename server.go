@@ -72,6 +72,13 @@ func main() {
 	checkAndInitCassandraSession()
 	log.Infof("zicops vilt manager initialization complete")
 	controller.CCBackendController(ctx, port, bootUpErrors, r)
+	err = <-bootUpErrors
+	if err != nil {
+		log.Errorf("there is an issue starting backend server for vilt: %v", err.Error())
+		global.WaitGroupServer.Wait()
+		os.Exit(1)
+	}
+	log.Infof("vilt server started successfully.")
 }
 
 func monitorSystem(cancel context.CancelFunc, errorChannel chan error) {
