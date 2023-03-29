@@ -1,5 +1,3 @@
-
-
 input ViltInput {
   lsp_id: String
   course_id: String
@@ -70,11 +68,35 @@ type TopicClassroom {
   status: String
 }
 
+input TrainerInput {
+  id: String
+  lsp_id: String
+  user_id: String
+  vendor_id: String
+  expertise: [String]
+  status: String
+}
+
+type Trainer {
+  id: String
+  lsp_id: String
+  user_id: String
+  vendor_id: String
+  expertise: [String]
+  status: String
+  created_at: String
+  created_by: String
+  updated_at: String
+  updated_by: String
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
   createTopicClassroom(input: TopicClassroomInput): TopicClassroom
   updateTopicClassroom(input: TopicClassroomInput): TopicClassroom
+  createTrainerData(input: TrainerInput): Trainer
+  updateTrainerData(input: TrainerInput): Trainer
 }
 
 type Query {
