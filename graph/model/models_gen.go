@@ -44,6 +44,28 @@ type TopicClassroomInput struct {
 	Status               *string   `json:"status"`
 }
 
+type Trainer struct {
+	ID        *string   `json:"id"`
+	LspID     *string   `json:"lsp_id"`
+	UserID    *string   `json:"user_id"`
+	VendorID  *string   `json:"vendor_id"`
+	Expertise []*string `json:"expertise"`
+	Status    *string   `json:"status"`
+	CreatedAt *string   `json:"created_at"`
+	CreatedBy *string   `json:"created_by"`
+	UpdatedAt *string   `json:"updated_at"`
+	UpdatedBy *string   `json:"updated_by"`
+}
+
+type TrainerInput struct {
+	ID        *string   `json:"id"`
+	LspID     *string   `json:"lsp_id"`
+	UserID    *string   `json:"user_id"`
+	VendorID  *string   `json:"vendor_id"`
+	Expertise []*string `json:"expertise"`
+	Status    *string   `json:"status"`
+}
+
 type Vilt struct {
 	LspID           *string   `json:"lsp_id"`
 	CourseID        *string   `json:"course_id"`

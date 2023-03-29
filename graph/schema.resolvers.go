@@ -51,6 +51,26 @@ func (r *mutationResolver) UpdateTopicClassroom(ctx context.Context, input *mode
 	return resp, nil
 }
 
+// CreateTrainerData is the resolver for the createTrainerData field.
+func (r *mutationResolver) CreateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.Trainer, error) {
+	resp, err := handlers.CreateTrainerData(ctx, input)
+	if err != nil {
+		log.Printf("Got error while creating trainer data: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// UpdateTrainerData is the resolver for the updateTrainerData field.
+func (r *mutationResolver) UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.Trainer, error) {
+	resp, err := handlers.UpdateTrainerData(ctx, input)
+	if err != nil {
+		log.Printf("Got error while updating trainer data: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetViltData is the resolver for the getViltData field.
 func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error) {
 	resp, err := handlers.GetViltData(ctx, courseID)
@@ -76,6 +96,16 @@ func (r *queryResolver) GetTopicClassroomsByTopicIds(ctx context.Context, topicI
 	resp, err := handlers.GetTopicClassroomsByTopicIds(ctx, topicIds)
 	if err != nil {
 		log.Printf("Got error while getting topics: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// GetTrainerData is the resolver for the getTrainerData field.
+func (r *queryResolver) GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*model.Trainer, error) {
+	resp, err := handlers.GetTrainerData(ctx, lspID, vendorID)
+	if err != nil {
+		log.Printf("Got error while getting trainer: %v", err)
 		return nil, err
 	}
 	return resp, nil
