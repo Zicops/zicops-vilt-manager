@@ -64,7 +64,7 @@ func CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, e
 		}
 		vilt.Moderators = tmp
 	}
-	if input.CourseStartDate != nil {
+	if input.CourseStartDate != nil && *input.CourseStartDate != "" {
 		sd, err := strconv.Atoi(*input.CourseStartDate)
 		if err != nil {
 			return nil, err
@@ -72,7 +72,7 @@ func CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, e
 		sdInt := int64(sd)
 		vilt.CourseStartDate = sdInt
 	}
-	if input.CourseEndDate != nil {
+	if input.CourseEndDate != nil && *input.CourseEndDate != "" {
 		sd, err := strconv.Atoi(*input.CourseEndDate)
 		if err != nil {
 			return nil, err

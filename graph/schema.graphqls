@@ -103,4 +103,5 @@ type Query {
   getViltData(courseId: String): Vilt
   getTopicClassroom(topic_id: String): TopicClassroom
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
+  getTrainerData(lsp_id: String, vendor_id: String): [Trainer]
 }
