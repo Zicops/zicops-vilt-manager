@@ -67,29 +67,39 @@ type TrainerInput struct {
 }
 
 type Vilt struct {
-	LspID           *string   `json:"lsp_id"`
-	CourseID        *string   `json:"course_id"`
-	NoOfLearners    *int      `json:"no_of_learners"`
-	Trainers        []*string `json:"trainers"`
-	Moderators      []*string `json:"moderators"`
-	CourseStartDate *string   `json:"course_start_date"`
-	CourseEndDate   *string   `json:"course_end_date"`
-	Curriculum      *string   `json:"curriculum"`
-	CreatedAt       *string   `json:"created_at"`
-	CreatedBy       *string   `json:"created_by"`
-	UpdatedAt       *string   `json:"updated_at"`
-	UpdatedBy       *string   `json:"updated_by"`
-	Status          *string   `json:"status"`
+	ID                 *string   `json:"id"`
+	LspID              *string   `json:"lsp_id"`
+	CourseID           *string   `json:"course_id"`
+	NoOfLearners       *int      `json:"no_of_learners"`
+	Trainers           []*string `json:"trainers"`
+	Moderators         []*string `json:"moderators"`
+	CourseStartDate    *string   `json:"course_start_date"`
+	CourseEndDate      *string   `json:"course_end_date"`
+	IsTrainerDecided   *bool     `json:"is_trainer_decided"`
+	IsModeratorDecided *bool     `json:"is_moderator_decided"`
+	IsStartDateDecided *bool     `json:"is_start_date_decided"`
+	IsEndDateDecided   *bool     `json:"is_end_date_decided"`
+	Curriculum         *string   `json:"curriculum"`
+	CreatedAt          *string   `json:"created_at"`
+	CreatedBy          *string   `json:"created_by"`
+	UpdatedAt          *string   `json:"updated_at"`
+	UpdatedBy          *string   `json:"updated_by"`
+	Status             *string   `json:"status"`
 }
 
 type ViltInput struct {
-	LspID           *string   `json:"lsp_id"`
-	CourseID        *string   `json:"course_id"`
-	NoOfLearners    *int      `json:"no_of_learners"`
-	Trainers        []*string `json:"trainers"`
-	Moderators      []*string `json:"moderators"`
-	CourseStartDate *string   `json:"course_start_date"`
-	CourseEndDate   *string   `json:"course_end_date"`
-	Curriculum      *string   `json:"curriculum"`
-	Status          *string   `json:"status"`
+	ID                 *string   `json:"id"`
+	LspID              *string   `json:"lsp_id"`
+	CourseID           *string   `json:"course_id"`
+	NoOfLearners       *int      `json:"no_of_learners"`
+	Trainers           []*string `json:"trainers"`
+	Moderators         []*string `json:"moderators"`
+	CourseStartDate    *string   `json:"course_start_date"`
+	CourseEndDate      *string   `json:"course_end_date"`
+	Curriculum         *string   `json:"curriculum"`
+	IsTrainerDecided   *bool     `json:"is_trainer_decided"`
+	IsModeratorDecided *bool     `json:"is_moderator_decided"`
+	IsStartDateDecided *bool     `json:"is_start_date_decided"`
+	IsEndDateDecided   *bool     `json:"is_end_date_decided"`
+	Status             *string   `json:"status"`
 }
