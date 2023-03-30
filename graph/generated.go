@@ -58,6 +58,7 @@ type ComplexityRoot struct {
 		GetTopicClassroomsByTopicIds func(childComplexity int, topicIds []*string) int
 		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string) int
 		GetViltData                  func(childComplexity int, courseID *string) int
+		GetViltDataByID              func(childComplexity int, id *string) int
 	}
 
 	TopicClassroom struct {
@@ -97,19 +98,24 @@ type ComplexityRoot struct {
 	}
 
 	Vilt struct {
-		CourseEndDate   func(childComplexity int) int
-		CourseID        func(childComplexity int) int
-		CourseStartDate func(childComplexity int) int
-		CreatedAt       func(childComplexity int) int
-		CreatedBy       func(childComplexity int) int
-		Curriculum      func(childComplexity int) int
-		LspID           func(childComplexity int) int
-		Moderators      func(childComplexity int) int
-		NoOfLearners    func(childComplexity int) int
-		Status          func(childComplexity int) int
-		Trainers        func(childComplexity int) int
-		UpdatedAt       func(childComplexity int) int
-		UpdatedBy       func(childComplexity int) int
+		CourseEndDate      func(childComplexity int) int
+		CourseID           func(childComplexity int) int
+		CourseStartDate    func(childComplexity int) int
+		CreatedAt          func(childComplexity int) int
+		CreatedBy          func(childComplexity int) int
+		Curriculum         func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		IsEndDateDecided   func(childComplexity int) int
+		IsModeratorDecided func(childComplexity int) int
+		IsStartDateDecided func(childComplexity int) int
+		IsTrainerDecided   func(childComplexity int) int
+		LspID              func(childComplexity int) int
+		Moderators         func(childComplexity int) int
+		NoOfLearners       func(childComplexity int) int
+		Status             func(childComplexity int) int
+		Trainers           func(childComplexity int) int
+		UpdatedAt          func(childComplexity int) int
+		UpdatedBy          func(childComplexity int) int
 	}
 }
 
@@ -122,7 +128,8 @@ type MutationResolver interface {
 	UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.Trainer, error)
 }
 type QueryResolver interface {
-	GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error)
+	GetViltData(ctx context.Context, courseID *string) ([]*model.Vilt, error)
+	GetViltDataByID(ctx context.Context, id *string) (*model.Vilt, error)
 	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
 	GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error)
 	GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*model.Trainer, error)
@@ -262,6 +269,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetViltData(childComplexity, args["courseId"].(*string)), true
+
+	case "Query.getViltDataById":
+		if e.complexity.Query.GetViltDataByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getViltDataById_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetViltDataByID(childComplexity, args["id"].(*string)), true
 
 	case "TopicClassroom.breaktime":
 		if e.complexity.TopicClassroom.Breaktime == nil {
@@ -514,6 +533,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Vilt.Curriculum(childComplexity), true
+
+	case "Vilt.id":
+		if e.complexity.Vilt.ID == nil {
+			break
+		}
+
+		return e.complexity.Vilt.ID(childComplexity), true
+
+	case "Vilt.is_end_date_decided":
+		if e.complexity.Vilt.IsEndDateDecided == nil {
+			break
+		}
+
+		return e.complexity.Vilt.IsEndDateDecided(childComplexity), true
+
+	case "Vilt.is_moderator_decided":
+		if e.complexity.Vilt.IsModeratorDecided == nil {
+			break
+		}
+
+		return e.complexity.Vilt.IsModeratorDecided(childComplexity), true
+
+	case "Vilt.is_start_date_decided":
+		if e.complexity.Vilt.IsStartDateDecided == nil {
+			break
+		}
+
+		return e.complexity.Vilt.IsStartDateDecided(childComplexity), true
+
+	case "Vilt.is_trainer_decided":
+		if e.complexity.Vilt.IsTrainerDecided == nil {
+			break
+		}
+
+		return e.complexity.Vilt.IsTrainerDecided(childComplexity), true
 
 	case "Vilt.lsp_id":
 		if e.complexity.Vilt.LspID == nil {
@@ -813,6 +867,21 @@ func (ec *executionContext) field_Query_getTrainerData_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_getViltDataById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_getViltData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -902,6 +971,8 @@ func (ec *executionContext) fieldContext_Mutation_createViltData(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_Vilt_id(ctx, field)
 			case "lsp_id":
 				return ec.fieldContext_Vilt_lsp_id(ctx, field)
 			case "course_id":
@@ -916,6 +987,14 @@ func (ec *executionContext) fieldContext_Mutation_createViltData(ctx context.Con
 				return ec.fieldContext_Vilt_course_start_date(ctx, field)
 			case "course_end_date":
 				return ec.fieldContext_Vilt_course_end_date(ctx, field)
+			case "is_trainer_decided":
+				return ec.fieldContext_Vilt_is_trainer_decided(ctx, field)
+			case "is_moderator_decided":
+				return ec.fieldContext_Vilt_is_moderator_decided(ctx, field)
+			case "is_start_date_decided":
+				return ec.fieldContext_Vilt_is_start_date_decided(ctx, field)
+			case "is_end_date_decided":
+				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
 			case "created_at":
@@ -982,6 +1061,8 @@ func (ec *executionContext) fieldContext_Mutation_updateViltData(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_Vilt_id(ctx, field)
 			case "lsp_id":
 				return ec.fieldContext_Vilt_lsp_id(ctx, field)
 			case "course_id":
@@ -996,6 +1077,14 @@ func (ec *executionContext) fieldContext_Mutation_updateViltData(ctx context.Con
 				return ec.fieldContext_Vilt_course_start_date(ctx, field)
 			case "course_end_date":
 				return ec.fieldContext_Vilt_course_end_date(ctx, field)
+			case "is_trainer_decided":
+				return ec.fieldContext_Vilt_is_trainer_decided(ctx, field)
+			case "is_moderator_decided":
+				return ec.fieldContext_Vilt_is_moderator_decided(ctx, field)
+			case "is_start_date_decided":
+				return ec.fieldContext_Vilt_is_start_date_decided(ctx, field)
+			case "is_end_date_decided":
+				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
 			case "created_at":
@@ -1385,9 +1474,9 @@ func (ec *executionContext) _Query_getViltData(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Vilt)
+	res := resTmp.([]*model.Vilt)
 	fc.Result = res
-	return ec.marshalOVilt2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx, field.Selections, res)
+	return ec.marshalOVilt2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getViltData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1398,6 +1487,8 @@ func (ec *executionContext) fieldContext_Query_getViltData(ctx context.Context, 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_Vilt_id(ctx, field)
 			case "lsp_id":
 				return ec.fieldContext_Vilt_lsp_id(ctx, field)
 			case "course_id":
@@ -1412,6 +1503,14 @@ func (ec *executionContext) fieldContext_Query_getViltData(ctx context.Context, 
 				return ec.fieldContext_Vilt_course_start_date(ctx, field)
 			case "course_end_date":
 				return ec.fieldContext_Vilt_course_end_date(ctx, field)
+			case "is_trainer_decided":
+				return ec.fieldContext_Vilt_is_trainer_decided(ctx, field)
+			case "is_moderator_decided":
+				return ec.fieldContext_Vilt_is_moderator_decided(ctx, field)
+			case "is_start_date_decided":
+				return ec.fieldContext_Vilt_is_start_date_decided(ctx, field)
+			case "is_end_date_decided":
+				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
 			case "created_at":
@@ -1436,6 +1535,96 @@ func (ec *executionContext) fieldContext_Query_getViltData(ctx context.Context, 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getViltData_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getViltDataById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getViltDataById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetViltDataByID(rctx, fc.Args["id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Vilt)
+	fc.Result = res
+	return ec.marshalOVilt2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getViltDataById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Vilt_id(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_Vilt_lsp_id(ctx, field)
+			case "course_id":
+				return ec.fieldContext_Vilt_course_id(ctx, field)
+			case "no_of_learners":
+				return ec.fieldContext_Vilt_no_of_learners(ctx, field)
+			case "trainers":
+				return ec.fieldContext_Vilt_trainers(ctx, field)
+			case "moderators":
+				return ec.fieldContext_Vilt_moderators(ctx, field)
+			case "course_start_date":
+				return ec.fieldContext_Vilt_course_start_date(ctx, field)
+			case "course_end_date":
+				return ec.fieldContext_Vilt_course_end_date(ctx, field)
+			case "is_trainer_decided":
+				return ec.fieldContext_Vilt_is_trainer_decided(ctx, field)
+			case "is_moderator_decided":
+				return ec.fieldContext_Vilt_is_moderator_decided(ctx, field)
+			case "is_start_date_decided":
+				return ec.fieldContext_Vilt_is_start_date_decided(ctx, field)
+			case "is_end_date_decided":
+				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
+			case "curriculum":
+				return ec.fieldContext_Vilt_curriculum(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Vilt_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Vilt_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Vilt_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Vilt_updated_by(ctx, field)
+			case "status":
+				return ec.fieldContext_Vilt_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Vilt", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getViltDataById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3063,6 +3252,47 @@ func (ec *executionContext) fieldContext_Trainer_updated_by(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Vilt_id(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Vilt_lsp_id(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Vilt_lsp_id(ctx, field)
 	if err != nil {
@@ -3345,6 +3575,170 @@ func (ec *executionContext) fieldContext_Vilt_course_end_date(ctx context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_is_trainer_decided(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_is_trainer_decided(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsTrainerDecided, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_is_trainer_decided(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_is_moderator_decided(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_is_moderator_decided(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsModeratorDecided, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_is_moderator_decided(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_is_start_date_decided(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_is_start_date_decided(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsStartDateDecided, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_is_start_date_decided(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_is_end_date_decided(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEndDateDecided, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_is_end_date_decided(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5592,13 +5986,21 @@ func (ec *executionContext) unmarshalInputViltInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"lsp_id", "course_id", "no_of_learners", "trainers", "moderators", "course_start_date", "course_end_date", "curriculum", "status"}
+	fieldsInOrder := [...]string{"id", "lsp_id", "course_id", "no_of_learners", "trainers", "moderators", "course_start_date", "course_end_date", "curriculum", "is_trainer_decided", "is_moderator_decided", "is_start_date_decided", "is_end_date_decided", "status"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "lsp_id":
 			var err error
 
@@ -5660,6 +6062,38 @@ func (ec *executionContext) unmarshalInputViltInput(ctx context.Context, obj int
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("curriculum"))
 			it.Curriculum, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_trainer_decided":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_trainer_decided"))
+			it.IsTrainerDecided, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_moderator_decided":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_moderator_decided"))
+			it.IsModeratorDecided, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_start_date_decided":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_start_date_decided"))
+			it.IsStartDateDecided, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_end_date_decided":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_end_date_decided"))
+			it.IsEndDateDecided, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5780,6 +6214,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getViltData(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getViltDataById":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getViltDataById(ctx, field)
 				return res
 			}
 
@@ -6045,6 +6499,10 @@ func (ec *executionContext) _Vilt(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Vilt")
+		case "id":
+
+			out.Values[i] = ec._Vilt_id(ctx, field, obj)
+
 		case "lsp_id":
 
 			out.Values[i] = ec._Vilt_lsp_id(ctx, field, obj)
@@ -6072,6 +6530,22 @@ func (ec *executionContext) _Vilt(ctx context.Context, sel ast.SelectionSet, obj
 		case "course_end_date":
 
 			out.Values[i] = ec._Vilt_course_end_date(ctx, field, obj)
+
+		case "is_trainer_decided":
+
+			out.Values[i] = ec._Vilt_is_trainer_decided(ctx, field, obj)
+
+		case "is_moderator_decided":
+
+			out.Values[i] = ec._Vilt_is_moderator_decided(ctx, field, obj)
+
+		case "is_start_date_decided":
+
+			out.Values[i] = ec._Vilt_is_start_date_decided(ctx, field, obj)
+
+		case "is_end_date_decided":
+
+			out.Values[i] = ec._Vilt_is_end_date_decided(ctx, field, obj)
 
 		case "curriculum":
 
@@ -6909,6 +7383,47 @@ func (ec *executionContext) unmarshalOTrainerInput2ᚖgithubᚗcomᚋzicopsᚋzi
 	}
 	res, err := ec.unmarshalInputTrainerInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOVilt2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx context.Context, sel ast.SelectionSet, v []*model.Vilt) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOVilt2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOVilt2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐVilt(ctx context.Context, sel ast.SelectionSet, v *model.Vilt) graphql.Marshaler {

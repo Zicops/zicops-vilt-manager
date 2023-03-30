@@ -72,8 +72,18 @@ func (r *mutationResolver) UpdateTrainerData(ctx context.Context, input *model.T
 }
 
 // GetViltData is the resolver for the getViltData field.
-func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error) {
+func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) ([]*model.Vilt, error) {
 	resp, err := handlers.GetViltData(ctx, courseID)
+	if err != nil {
+		log.Printf("Got error while getting vilt data: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// GetViltDataByID is the resolver for the getViltDataById field.
+func (r *queryResolver) GetViltDataByID(ctx context.Context, id *string) (*model.Vilt, error) {
+	resp, err := handlers.GetViltDataByID(ctx, id)
 	if err != nil {
 		log.Printf("Got error while getting vilt data: %v", err)
 		return nil, err

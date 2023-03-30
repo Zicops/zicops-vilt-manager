@@ -1,4 +1,5 @@
 input ViltInput {
+  id: String
   lsp_id: String
   course_id: String
   no_of_learners: Int
@@ -7,10 +8,15 @@ input ViltInput {
   course_start_date: String
   course_end_date: String
   curriculum: String
+  is_trainer_decided: Boolean
+  is_moderator_decided: Boolean
+  is_start_date_decided: Boolean
+  is_end_date_decided: Boolean
   status: String
 }
 
 type Vilt {
+  id: String
   lsp_id: String
   course_id: String
   no_of_learners: Int
@@ -18,6 +24,10 @@ type Vilt {
   moderators: [String]
   course_start_date: String
   course_end_date: String
+  is_trainer_decided: Boolean
+  is_moderator_decided: Boolean
+  is_start_date_decided: Boolean
+  is_end_date_decided: Boolean
   curriculum: String
   created_at: String
   created_by: String
@@ -100,7 +110,8 @@ type Mutation {
 }
 
 type Query {
-  getViltData(courseId: String): Vilt
+  getViltData(courseId: String): [Vilt]
+  getViltDataById(id: String): Vilt
   getTopicClassroom(topic_id: String): TopicClassroom
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
   getTrainerData(lsp_id: String, vendor_id: String): [Trainer]
