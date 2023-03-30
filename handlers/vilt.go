@@ -264,6 +264,9 @@ func GetViltData(ctx context.Context, courseID *string) (*model.Vilt, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(vilts) == 0 {
+		return nil, nil
+	}
 	vilt := vilts[0]
 	learners := int(vilt.NoOfLearners)
 	var trainers []*string
