@@ -39,6 +39,8 @@ type Vilt {
 input TopicClassroomInput {
   id: String
   topic_id: String
+  module_id: String
+  course_id: String
   trainers: [String]
   moderators: [String]
   training_start_time: String

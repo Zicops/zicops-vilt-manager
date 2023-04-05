@@ -5770,7 +5770,7 @@ func (ec *executionContext) unmarshalInputTopicClassroomInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "topic_id", "trainers", "moderators", "training_start_time", "training_end_time", "duration", "breaktime", "language", "is_screen_share_enabled", "is_chat_enabled", "is_microphone_enabled", "is_qa_enabled", "is_camera_enabled", "is_override_config", "status"}
+	fieldsInOrder := [...]string{"id", "topic_id", "module_id", "course_id", "trainers", "moderators", "training_start_time", "training_end_time", "duration", "breaktime", "language", "is_screen_share_enabled", "is_chat_enabled", "is_microphone_enabled", "is_qa_enabled", "is_camera_enabled", "is_override_config", "status"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5790,6 +5790,22 @@ func (ec *executionContext) unmarshalInputTopicClassroomInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic_id"))
 			it.TopicID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "module_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("module_id"))
+			it.ModuleID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "course_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("course_id"))
+			it.CourseID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
