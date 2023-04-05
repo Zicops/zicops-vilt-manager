@@ -23,12 +23,18 @@ func CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 		return nil, err
 	}
 	email := claims["email"].(string)
+	lsp := claims["lsp_id"].(string)
 
 	session, err := global.CassPool.GetSession(ctx, "viltz")
 	if err != nil {
 		return nil, err
 	}
 	CassSession := session
+	session, err = global.CassPool.GetSession(ctx, "coursez")
+	if err != nil {
+		return nil, err
+	}
+	CassCoursezSession := session
 
 	id := uuid.New().String()
 	createdAt := time.Now().Unix()
@@ -64,21 +70,21 @@ func CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 		topic.Moderator = tmp
 	}
 
-	if input.TrainingStartTime != nil {
+	if input.TrainingStartTime != nil && *input.TrainingStartTime != "" {
 		tst, err := strconv.Atoi(*input.TrainingStartTime)
 		if err != nil {
 			return nil, err
 		}
 		topic.TrainingStartTime = int64(tst)
 	}
-	if input.TrainingEndTime != nil {
+	if input.TrainingEndTime != nil && *input.TrainingEndTime != "" {
 		tet, err := strconv.Atoi(*input.TrainingEndTime)
 		if err != nil {
 			return nil, err
 		}
 		topic.TrainingEndTime = int64(tet)
 	}
-	if input.Duration != nil {
+	if input.Duration != nil && *input.Duration != "" {
 		d, err := strconv.Atoi(*input.Duration)
 		if err != nil {
 			return nil, err
@@ -111,6 +117,34 @@ func CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 	}
 	if input.Status != nil {
 		topic.Status = *input.Status
+	}
+
+	if input.Duration != nil && *input.Duration != "" && input.ModuleID != nil {
+		module, err := GetModule(CassCoursezSession, *input.ModuleID, lsp)
+		if err != nil {
+			return nil, err
+		}
+		duration, _ := strconv.Atoi(*input.Duration)
+		newDuration := module.Duration + duration
+		queryStr := fmt.Sprintf("UPDATE coursez.module SET duration=%d WHERE id='%s' and lsp_id='%s' and is_active=true AND created_at=%d", newDuration, *input.ModuleID, lsp, module.CreatedAt)
+		updateQ := CassSession.Query(queryStr, nil)
+		if err := updateQ.ExecRelease(); err != nil {
+			return nil, err
+		}
+	}
+
+	if input.Duration != nil && *input.Duration != "" && input.CourseID != nil {
+		course, err := GetCourse(CassCoursezSession, *input.CourseID, lsp)
+		if err != nil {
+			return nil, err
+		}
+		duration, _ := strconv.Atoi(*input.Duration)
+		newDuration := course.Duration + duration
+		queryStr := fmt.Sprintf("UPDATE coursez.course SET duration=%d WHERE id='%s' and lsp_id='%s' and is_active=true and created_at=%d", newDuration, *input.CourseID, lsp, course.CreatedAt)
+		updateQ := CassSession.Query(queryStr, nil)
+		if err := updateQ.ExecRelease(); err != nil {
+			return nil, err
+		}
 	}
 
 	insertQuery := CassSession.Query(viltz.TopicClassroomTable.Insert()).BindStruct(topic)
@@ -220,12 +254,19 @@ func UpdateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 		return nil, err
 	}
 	email := claims["email"].(string)
+	lsp := claims["lsp_id"].(string)
 
-	sesion, err := global.CassPool.GetSession(ctx, "viltz")
+	session, err := global.CassPool.GetSession(ctx, "viltz")
 	if err != nil {
 		return nil, err
 	}
-	CassSession := sesion
+	CassSession := session
+
+	session, err = global.CassPool.GetSession(ctx, "coursez")
+	if err != nil {
+		return nil, err
+	}
+	CassCoursezSession := session
 	qryStr := fmt.Sprintf(`SELECT * FROM viltz.topic_classroom WHERE topic_id='%s' ALLOW FILTERING`, *input.TopicID)
 
 	getTopicsData := func() (topicsData []viltz.TopicClassroom, err error) {
@@ -256,6 +297,34 @@ func UpdateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 		}
 		topic.Duration = int64(duration)
 		updatedCols = append(updatedCols, "duration")
+	}
+
+	if input.Duration != nil && *input.Duration != "" && input.ModuleID != nil {
+		module, err := GetModule(CassCoursezSession, *input.ModuleID, lsp)
+		if err != nil {
+			return nil, err
+		}
+		duration, _ := strconv.Atoi(*input.Duration)
+		newDuration := module.Duration - int(topic.Duration) + duration
+		queryStr := fmt.Sprintf("UPDATE coursez.module SET duration=%d WHERE id='%s' and lsp_id='%s' and is_active=true AND created_at=%d", newDuration, *input.ModuleID, lsp, module.CreatedAt)
+		updateQ := CassSession.Query(queryStr, nil)
+		if err := updateQ.ExecRelease(); err != nil {
+			return nil, err
+		}
+	}
+
+	if input.Duration != nil && *input.Duration != "" && input.CourseID != nil {
+		course, err := GetCourse(CassCoursezSession, *input.CourseID, lsp)
+		if err != nil {
+			return nil, err
+		}
+		duration, _ := strconv.Atoi(*input.Duration)
+		newDuration := course.Duration - int(topic.Duration) + duration
+		queryStr := fmt.Sprintf("UPDATE coursez.course SET duration=%d WHERE id='%s' and lsp_id='%s' and is_active=true and created_at=%d", newDuration, *input.CourseID, lsp, course.CreatedAt)
+		updateQ := CassSession.Query(queryStr, nil)
+		if err := updateQ.ExecRelease(); err != nil {
+			return nil, err
+		}
 	}
 
 	if input.IsCameraEnabled != nil {

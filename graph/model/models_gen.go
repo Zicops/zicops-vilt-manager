@@ -28,6 +28,8 @@ type TopicClassroom struct {
 type TopicClassroomInput struct {
 	ID                   *string   `json:"id"`
 	TopicID              *string   `json:"topic_id"`
+	ModuleID             *string   `json:"module_id"`
+	CourseID             *string   `json:"course_id"`
 	Trainers             []*string `json:"trainers"`
 	Moderators           []*string `json:"moderators"`
 	TrainingStartTime    *string   `json:"training_start_time"`
