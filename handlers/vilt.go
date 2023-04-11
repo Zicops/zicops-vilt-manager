@@ -15,6 +15,9 @@ import (
 	"github.com/zicops/zicops-vilt-manager/lib/identity"
 )
 
+// course recording available upto
+// recording available/accessible days
+// int
 func CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, error) {
 	claims, err := identity.GetClaimsFromContext(ctx)
 	if err != nil {

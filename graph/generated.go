@@ -8,6 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 
@@ -38,6 +39,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Subscription() SubscriptionResolver
 }
 
 type DirectiveRoot struct {
@@ -59,6 +61,10 @@ type ComplexityRoot struct {
 		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string) int
 		GetViltData                  func(childComplexity int, courseID *string) int
 		GetViltDataByID              func(childComplexity int, id *string) int
+	}
+
+	Subscription struct {
+		Tags func(childComplexity int, id *string) int
 	}
 
 	TopicClassroom struct {
@@ -98,24 +104,39 @@ type ComplexityRoot struct {
 	}
 
 	Vilt struct {
-		CourseEndDate      func(childComplexity int) int
-		CourseID           func(childComplexity int) int
-		CourseStartDate    func(childComplexity int) int
-		CreatedAt          func(childComplexity int) int
-		CreatedBy          func(childComplexity int) int
-		Curriculum         func(childComplexity int) int
-		ID                 func(childComplexity int) int
-		IsEndDateDecided   func(childComplexity int) int
-		IsModeratorDecided func(childComplexity int) int
-		IsStartDateDecided func(childComplexity int) int
-		IsTrainerDecided   func(childComplexity int) int
-		LspID              func(childComplexity int) int
-		Moderators         func(childComplexity int) int
-		NoOfLearners       func(childComplexity int) int
-		Status             func(childComplexity int) int
-		Trainers           func(childComplexity int) int
-		UpdatedAt          func(childComplexity int) int
-		UpdatedBy          func(childComplexity int) int
+		BookingEndDate        func(childComplexity int) int
+		BookingPublishBy      func(childComplexity int) int
+		BookingPublishOn      func(childComplexity int) int
+		BookingStartDate      func(childComplexity int) int
+		CourseEndDate         func(childComplexity int) int
+		CourseID              func(childComplexity int) int
+		CourseStartDate       func(childComplexity int) int
+		CreatedAt             func(childComplexity int) int
+		CreatedBy             func(childComplexity int) int
+		Currency              func(childComplexity int) int
+		Curriculum            func(childComplexity int) int
+		ID                    func(childComplexity int) int
+		IsBookingOpen         func(childComplexity int) int
+		IsEndDateDecided      func(childComplexity int) int
+		IsModeratorDecided    func(childComplexity int) int
+		IsRegistrationOpen    func(childComplexity int) int
+		IsStartDateDecided    func(childComplexity int) int
+		IsTrainerDecided      func(childComplexity int) int
+		LspID                 func(childComplexity int) int
+		MaxRegistrations      func(childComplexity int) int
+		Moderators            func(childComplexity int) int
+		NoOfLearners          func(childComplexity int) int
+		PricePerSeat          func(childComplexity int) int
+		PricingType           func(childComplexity int) int
+		RegistrationEndDate   func(childComplexity int) int
+		RegistrationPublishBy func(childComplexity int) int
+		RegistrationPublishOn func(childComplexity int) int
+		RegistrationStartDate func(childComplexity int) int
+		Status                func(childComplexity int) int
+		TaxPercentage         func(childComplexity int) int
+		Trainers              func(childComplexity int) int
+		UpdatedAt             func(childComplexity int) int
+		UpdatedBy             func(childComplexity int) int
 	}
 }
 
@@ -133,6 +154,9 @@ type QueryResolver interface {
 	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
 	GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error)
 	GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*model.Trainer, error)
+}
+type SubscriptionResolver interface {
+	Tags(ctx context.Context, id *string) (<-chan *model.TopicClassroom, error)
 }
 
 type executableSchema struct {
@@ -281,6 +305,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetViltDataByID(childComplexity, args["id"].(*string)), true
+
+	case "Subscription.tags":
+		if e.complexity.Subscription.Tags == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_tags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.Tags(childComplexity, args["id"].(*string)), true
 
 	case "TopicClassroom.breaktime":
 		if e.complexity.TopicClassroom.Breaktime == nil {
@@ -492,6 +528,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Trainer.VendorID(childComplexity), true
 
+	case "Vilt.booking_end_date":
+		if e.complexity.Vilt.BookingEndDate == nil {
+			break
+		}
+
+		return e.complexity.Vilt.BookingEndDate(childComplexity), true
+
+	case "Vilt.booking_publish_by":
+		if e.complexity.Vilt.BookingPublishBy == nil {
+			break
+		}
+
+		return e.complexity.Vilt.BookingPublishBy(childComplexity), true
+
+	case "Vilt.booking_publish_on":
+		if e.complexity.Vilt.BookingPublishOn == nil {
+			break
+		}
+
+		return e.complexity.Vilt.BookingPublishOn(childComplexity), true
+
+	case "Vilt.booking_start_date":
+		if e.complexity.Vilt.BookingStartDate == nil {
+			break
+		}
+
+		return e.complexity.Vilt.BookingStartDate(childComplexity), true
+
 	case "Vilt.course_end_date":
 		if e.complexity.Vilt.CourseEndDate == nil {
 			break
@@ -527,6 +591,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Vilt.CreatedBy(childComplexity), true
 
+	case "Vilt.currency":
+		if e.complexity.Vilt.Currency == nil {
+			break
+		}
+
+		return e.complexity.Vilt.Currency(childComplexity), true
+
 	case "Vilt.curriculum":
 		if e.complexity.Vilt.Curriculum == nil {
 			break
@@ -541,6 +612,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Vilt.ID(childComplexity), true
 
+	case "Vilt.is_booking_open":
+		if e.complexity.Vilt.IsBookingOpen == nil {
+			break
+		}
+
+		return e.complexity.Vilt.IsBookingOpen(childComplexity), true
+
 	case "Vilt.is_end_date_decided":
 		if e.complexity.Vilt.IsEndDateDecided == nil {
 			break
@@ -554,6 +632,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Vilt.IsModeratorDecided(childComplexity), true
+
+	case "Vilt.is_registration_open":
+		if e.complexity.Vilt.IsRegistrationOpen == nil {
+			break
+		}
+
+		return e.complexity.Vilt.IsRegistrationOpen(childComplexity), true
 
 	case "Vilt.is_start_date_decided":
 		if e.complexity.Vilt.IsStartDateDecided == nil {
@@ -576,6 +661,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Vilt.LspID(childComplexity), true
 
+	case "Vilt.max_registrations":
+		if e.complexity.Vilt.MaxRegistrations == nil {
+			break
+		}
+
+		return e.complexity.Vilt.MaxRegistrations(childComplexity), true
+
 	case "Vilt.moderators":
 		if e.complexity.Vilt.Moderators == nil {
 			break
@@ -590,12 +682,61 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Vilt.NoOfLearners(childComplexity), true
 
+	case "Vilt.price_per_seat":
+		if e.complexity.Vilt.PricePerSeat == nil {
+			break
+		}
+
+		return e.complexity.Vilt.PricePerSeat(childComplexity), true
+
+	case "Vilt.pricing_type":
+		if e.complexity.Vilt.PricingType == nil {
+			break
+		}
+
+		return e.complexity.Vilt.PricingType(childComplexity), true
+
+	case "Vilt.registration_end_date":
+		if e.complexity.Vilt.RegistrationEndDate == nil {
+			break
+		}
+
+		return e.complexity.Vilt.RegistrationEndDate(childComplexity), true
+
+	case "Vilt.registration_publish_by":
+		if e.complexity.Vilt.RegistrationPublishBy == nil {
+			break
+		}
+
+		return e.complexity.Vilt.RegistrationPublishBy(childComplexity), true
+
+	case "Vilt.registration_publish_on":
+		if e.complexity.Vilt.RegistrationPublishOn == nil {
+			break
+		}
+
+		return e.complexity.Vilt.RegistrationPublishOn(childComplexity), true
+
+	case "Vilt.registration_start_date":
+		if e.complexity.Vilt.RegistrationStartDate == nil {
+			break
+		}
+
+		return e.complexity.Vilt.RegistrationStartDate(childComplexity), true
+
 	case "Vilt.status":
 		if e.complexity.Vilt.Status == nil {
 			break
 		}
 
 		return e.complexity.Vilt.Status(childComplexity), true
+
+	case "Vilt.tax_percentage":
+		if e.complexity.Vilt.TaxPercentage == nil {
+			break
+		}
+
+		return e.complexity.Vilt.TaxPercentage(childComplexity), true
 
 	case "Vilt.trainers":
 		if e.complexity.Vilt.Trainers == nil {
@@ -657,6 +798,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next(ctx)
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -897,6 +1055,21 @@ func (ec *executionContext) field_Query_getViltData_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Subscription_tags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -997,6 +1170,36 @@ func (ec *executionContext) fieldContext_Mutation_createViltData(ctx context.Con
 				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
+			case "pricing_type":
+				return ec.fieldContext_Vilt_pricing_type(ctx, field)
+			case "price_per_seat":
+				return ec.fieldContext_Vilt_price_per_seat(ctx, field)
+			case "currency":
+				return ec.fieldContext_Vilt_currency(ctx, field)
+			case "tax_percentage":
+				return ec.fieldContext_Vilt_tax_percentage(ctx, field)
+			case "is_registration_open":
+				return ec.fieldContext_Vilt_is_registration_open(ctx, field)
+			case "is_booking_open":
+				return ec.fieldContext_Vilt_is_booking_open(ctx, field)
+			case "max_registrations":
+				return ec.fieldContext_Vilt_max_registrations(ctx, field)
+			case "registration_end_date":
+				return ec.fieldContext_Vilt_registration_end_date(ctx, field)
+			case "booking_start_date":
+				return ec.fieldContext_Vilt_booking_start_date(ctx, field)
+			case "booking_end_date":
+				return ec.fieldContext_Vilt_booking_end_date(ctx, field)
+			case "registration_publish_by":
+				return ec.fieldContext_Vilt_registration_publish_by(ctx, field)
+			case "registration_publish_on":
+				return ec.fieldContext_Vilt_registration_publish_on(ctx, field)
+			case "booking_publish_on":
+				return ec.fieldContext_Vilt_booking_publish_on(ctx, field)
+			case "booking_publish_by":
+				return ec.fieldContext_Vilt_booking_publish_by(ctx, field)
+			case "registration_start_date":
+				return ec.fieldContext_Vilt_registration_start_date(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Vilt_created_at(ctx, field)
 			case "created_by":
@@ -1087,6 +1290,36 @@ func (ec *executionContext) fieldContext_Mutation_updateViltData(ctx context.Con
 				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
+			case "pricing_type":
+				return ec.fieldContext_Vilt_pricing_type(ctx, field)
+			case "price_per_seat":
+				return ec.fieldContext_Vilt_price_per_seat(ctx, field)
+			case "currency":
+				return ec.fieldContext_Vilt_currency(ctx, field)
+			case "tax_percentage":
+				return ec.fieldContext_Vilt_tax_percentage(ctx, field)
+			case "is_registration_open":
+				return ec.fieldContext_Vilt_is_registration_open(ctx, field)
+			case "is_booking_open":
+				return ec.fieldContext_Vilt_is_booking_open(ctx, field)
+			case "max_registrations":
+				return ec.fieldContext_Vilt_max_registrations(ctx, field)
+			case "registration_end_date":
+				return ec.fieldContext_Vilt_registration_end_date(ctx, field)
+			case "booking_start_date":
+				return ec.fieldContext_Vilt_booking_start_date(ctx, field)
+			case "booking_end_date":
+				return ec.fieldContext_Vilt_booking_end_date(ctx, field)
+			case "registration_publish_by":
+				return ec.fieldContext_Vilt_registration_publish_by(ctx, field)
+			case "registration_publish_on":
+				return ec.fieldContext_Vilt_registration_publish_on(ctx, field)
+			case "booking_publish_on":
+				return ec.fieldContext_Vilt_booking_publish_on(ctx, field)
+			case "booking_publish_by":
+				return ec.fieldContext_Vilt_booking_publish_by(ctx, field)
+			case "registration_start_date":
+				return ec.fieldContext_Vilt_registration_start_date(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Vilt_created_at(ctx, field)
 			case "created_by":
@@ -1513,6 +1746,36 @@ func (ec *executionContext) fieldContext_Query_getViltData(ctx context.Context, 
 				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
+			case "pricing_type":
+				return ec.fieldContext_Vilt_pricing_type(ctx, field)
+			case "price_per_seat":
+				return ec.fieldContext_Vilt_price_per_seat(ctx, field)
+			case "currency":
+				return ec.fieldContext_Vilt_currency(ctx, field)
+			case "tax_percentage":
+				return ec.fieldContext_Vilt_tax_percentage(ctx, field)
+			case "is_registration_open":
+				return ec.fieldContext_Vilt_is_registration_open(ctx, field)
+			case "is_booking_open":
+				return ec.fieldContext_Vilt_is_booking_open(ctx, field)
+			case "max_registrations":
+				return ec.fieldContext_Vilt_max_registrations(ctx, field)
+			case "registration_end_date":
+				return ec.fieldContext_Vilt_registration_end_date(ctx, field)
+			case "booking_start_date":
+				return ec.fieldContext_Vilt_booking_start_date(ctx, field)
+			case "booking_end_date":
+				return ec.fieldContext_Vilt_booking_end_date(ctx, field)
+			case "registration_publish_by":
+				return ec.fieldContext_Vilt_registration_publish_by(ctx, field)
+			case "registration_publish_on":
+				return ec.fieldContext_Vilt_registration_publish_on(ctx, field)
+			case "booking_publish_on":
+				return ec.fieldContext_Vilt_booking_publish_on(ctx, field)
+			case "booking_publish_by":
+				return ec.fieldContext_Vilt_booking_publish_by(ctx, field)
+			case "registration_start_date":
+				return ec.fieldContext_Vilt_registration_start_date(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Vilt_created_at(ctx, field)
 			case "created_by":
@@ -1603,6 +1866,36 @@ func (ec *executionContext) fieldContext_Query_getViltDataById(ctx context.Conte
 				return ec.fieldContext_Vilt_is_end_date_decided(ctx, field)
 			case "curriculum":
 				return ec.fieldContext_Vilt_curriculum(ctx, field)
+			case "pricing_type":
+				return ec.fieldContext_Vilt_pricing_type(ctx, field)
+			case "price_per_seat":
+				return ec.fieldContext_Vilt_price_per_seat(ctx, field)
+			case "currency":
+				return ec.fieldContext_Vilt_currency(ctx, field)
+			case "tax_percentage":
+				return ec.fieldContext_Vilt_tax_percentage(ctx, field)
+			case "is_registration_open":
+				return ec.fieldContext_Vilt_is_registration_open(ctx, field)
+			case "is_booking_open":
+				return ec.fieldContext_Vilt_is_booking_open(ctx, field)
+			case "max_registrations":
+				return ec.fieldContext_Vilt_max_registrations(ctx, field)
+			case "registration_end_date":
+				return ec.fieldContext_Vilt_registration_end_date(ctx, field)
+			case "booking_start_date":
+				return ec.fieldContext_Vilt_booking_start_date(ctx, field)
+			case "booking_end_date":
+				return ec.fieldContext_Vilt_booking_end_date(ctx, field)
+			case "registration_publish_by":
+				return ec.fieldContext_Vilt_registration_publish_by(ctx, field)
+			case "registration_publish_on":
+				return ec.fieldContext_Vilt_registration_publish_on(ctx, field)
+			case "booking_publish_on":
+				return ec.fieldContext_Vilt_booking_publish_on(ctx, field)
+			case "booking_publish_by":
+				return ec.fieldContext_Vilt_booking_publish_by(ctx, field)
+			case "registration_start_date":
+				return ec.fieldContext_Vilt_registration_start_date(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Vilt_created_at(ctx, field)
 			case "created_by":
@@ -2018,6 +2311,114 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_tags(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_tags(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().Tags(rctx, fc.Args["id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.TopicClassroom):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOTopicClassroom2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TopicClassroom_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_TopicClassroom_topic_id(ctx, field)
+			case "trainers":
+				return ec.fieldContext_TopicClassroom_trainers(ctx, field)
+			case "moderators":
+				return ec.fieldContext_TopicClassroom_moderators(ctx, field)
+			case "training_start_time":
+				return ec.fieldContext_TopicClassroom_training_start_time(ctx, field)
+			case "training_end_time":
+				return ec.fieldContext_TopicClassroom_training_end_time(ctx, field)
+			case "duration":
+				return ec.fieldContext_TopicClassroom_duration(ctx, field)
+			case "breaktime":
+				return ec.fieldContext_TopicClassroom_breaktime(ctx, field)
+			case "language":
+				return ec.fieldContext_TopicClassroom_language(ctx, field)
+			case "is_screen_share_enabled":
+				return ec.fieldContext_TopicClassroom_is_screen_share_enabled(ctx, field)
+			case "is_chat_enabled":
+				return ec.fieldContext_TopicClassroom_is_chat_enabled(ctx, field)
+			case "is_microphone_enabled":
+				return ec.fieldContext_TopicClassroom_is_microphone_enabled(ctx, field)
+			case "is_qa_enabled":
+				return ec.fieldContext_TopicClassroom_is_qa_enabled(ctx, field)
+			case "is_camera_enabled":
+				return ec.fieldContext_TopicClassroom_is_camera_enabled(ctx, field)
+			case "is_override_config":
+				return ec.fieldContext_TopicClassroom_is_override_config(ctx, field)
+			case "created_at":
+				return ec.fieldContext_TopicClassroom_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_TopicClassroom_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_TopicClassroom_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_TopicClassroom_updated_by(ctx, field)
+			case "status":
+				return ec.fieldContext_TopicClassroom_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TopicClassroom", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_tags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -3780,6 +4181,621 @@ func (ec *executionContext) fieldContext_Vilt_curriculum(ctx context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_pricing_type(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_pricing_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PricingType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_pricing_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_price_per_seat(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_price_per_seat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PricePerSeat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_price_per_seat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_currency(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_currency(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Currency, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_currency(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_tax_percentage(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_tax_percentage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TaxPercentage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_tax_percentage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_is_registration_open(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_is_registration_open(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsRegistrationOpen, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_is_registration_open(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_is_booking_open(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_is_booking_open(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsBookingOpen, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_is_booking_open(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_max_registrations(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_max_registrations(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MaxRegistrations, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_max_registrations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_registration_end_date(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_registration_end_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RegistrationEndDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_registration_end_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_booking_start_date(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_booking_start_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BookingStartDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_booking_start_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_booking_end_date(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_booking_end_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BookingEndDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_booking_end_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_registration_publish_by(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_registration_publish_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RegistrationPublishBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_registration_publish_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_registration_publish_on(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_registration_publish_on(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RegistrationPublishOn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_registration_publish_on(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_booking_publish_on(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_booking_publish_on(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BookingPublishOn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_booking_publish_on(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_booking_publish_by(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_booking_publish_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BookingPublishBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_booking_publish_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Vilt_registration_start_date(ctx context.Context, field graphql.CollectedField, obj *model.Vilt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Vilt_registration_start_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RegistrationStartDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Vilt_registration_start_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Vilt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6002,7 +7018,7 @@ func (ec *executionContext) unmarshalInputViltInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "lsp_id", "course_id", "no_of_learners", "trainers", "moderators", "course_start_date", "course_end_date", "curriculum", "is_trainer_decided", "is_moderator_decided", "is_start_date_decided", "is_end_date_decided", "status"}
+	fieldsInOrder := [...]string{"id", "lsp_id", "course_id", "no_of_learners", "trainers", "moderators", "course_start_date", "course_end_date", "curriculum", "is_trainer_decided", "is_moderator_decided", "is_start_date_decided", "is_end_date_decided", "pricing_type", "price_per_seat", "currency", "tax_percentage", "is_registration_open", "is_booking_open", "max_registrations", "registration_end_date", "booking_start_date", "booking_end_date", "registration_publish_by", "registration_publish_on", "booking_publish_on", "booking_publish_by", "registration_start_date", "status"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6110,6 +7126,126 @@ func (ec *executionContext) unmarshalInputViltInput(ctx context.Context, obj int
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_end_date_decided"))
 			it.IsEndDateDecided, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "pricing_type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pricing_type"))
+			it.PricingType, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "price_per_seat":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price_per_seat"))
+			it.PricePerSeat, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "currency":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currency"))
+			it.Currency, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tax_percentage":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tax_percentage"))
+			it.TaxPercentage, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_registration_open":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_registration_open"))
+			it.IsRegistrationOpen, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_booking_open":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_booking_open"))
+			it.IsBookingOpen, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "max_registrations":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("max_registrations"))
+			it.MaxRegistrations, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "registration_end_date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("registration_end_date"))
+			it.RegistrationEndDate, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "booking_start_date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("booking_start_date"))
+			it.BookingStartDate, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "booking_end_date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("booking_end_date"))
+			it.BookingEndDate, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "registration_publish_by":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("registration_publish_by"))
+			it.RegistrationPublishBy, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "registration_publish_on":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("registration_publish_on"))
+			it.RegistrationPublishOn, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "booking_publish_on":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("booking_publish_on"))
+			it.BookingPublishOn, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "booking_publish_by":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("booking_publish_by"))
+			it.BookingPublishBy, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "registration_start_date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("registration_start_date"))
+			it.RegistrationStartDate, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6343,6 +7479,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func(ctx context.Context) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "tags":
+		return ec._Subscription_tags(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
+}
+
 var topicClassroomImplementors = []string{"TopicClassroom"}
 
 func (ec *executionContext) _TopicClassroom(ctx context.Context, sel ast.SelectionSet, obj *model.TopicClassroom) graphql.Marshaler {
@@ -6566,6 +7722,66 @@ func (ec *executionContext) _Vilt(ctx context.Context, sel ast.SelectionSet, obj
 		case "curriculum":
 
 			out.Values[i] = ec._Vilt_curriculum(ctx, field, obj)
+
+		case "pricing_type":
+
+			out.Values[i] = ec._Vilt_pricing_type(ctx, field, obj)
+
+		case "price_per_seat":
+
+			out.Values[i] = ec._Vilt_price_per_seat(ctx, field, obj)
+
+		case "currency":
+
+			out.Values[i] = ec._Vilt_currency(ctx, field, obj)
+
+		case "tax_percentage":
+
+			out.Values[i] = ec._Vilt_tax_percentage(ctx, field, obj)
+
+		case "is_registration_open":
+
+			out.Values[i] = ec._Vilt_is_registration_open(ctx, field, obj)
+
+		case "is_booking_open":
+
+			out.Values[i] = ec._Vilt_is_booking_open(ctx, field, obj)
+
+		case "max_registrations":
+
+			out.Values[i] = ec._Vilt_max_registrations(ctx, field, obj)
+
+		case "registration_end_date":
+
+			out.Values[i] = ec._Vilt_registration_end_date(ctx, field, obj)
+
+		case "booking_start_date":
+
+			out.Values[i] = ec._Vilt_booking_start_date(ctx, field, obj)
+
+		case "booking_end_date":
+
+			out.Values[i] = ec._Vilt_booking_end_date(ctx, field, obj)
+
+		case "registration_publish_by":
+
+			out.Values[i] = ec._Vilt_registration_publish_by(ctx, field, obj)
+
+		case "registration_publish_on":
+
+			out.Values[i] = ec._Vilt_registration_publish_on(ctx, field, obj)
+
+		case "booking_publish_on":
+
+			out.Values[i] = ec._Vilt_booking_publish_on(ctx, field, obj)
+
+		case "booking_publish_by":
+
+			out.Values[i] = ec._Vilt_booking_publish_by(ctx, field, obj)
+
+		case "registration_start_date":
+
+			out.Values[i] = ec._Vilt_registration_start_date(ctx, field, obj)
 
 		case "created_at":
 
@@ -7223,6 +8439,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
