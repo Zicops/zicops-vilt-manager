@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/zicops/zicops-vilt-manager/graph/model"
@@ -121,11 +122,20 @@ func (r *queryResolver) GetTrainerData(ctx context.Context, lspID *string, vendo
 	return resp, nil
 }
 
+// Tags is the resolver for the tags field.
+func (r *subscriptionResolver) Tags(ctx context.Context, id *string) (<-chan *model.TopicClassroom, error) {
+	panic(fmt.Errorf("not implemented: Tags - tags"))
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Subscription returns SubscriptionResolver implementation.
+func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }

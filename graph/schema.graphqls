@@ -12,6 +12,21 @@ input ViltInput {
   is_moderator_decided: Boolean
   is_start_date_decided: Boolean
   is_end_date_decided: Boolean
+  pricing_type: String
+  price_per_seat: Int
+  currency: String
+  tax_percentage: Float
+  is_registration_open:Boolean
+  is_booking_open: Boolean
+  max_registrations: Int
+  registration_end_date: Int
+  booking_start_date: Int
+  booking_end_date: Int
+  registration_publish_by: String
+  registration_publish_on: Int
+  booking_publish_on: Int
+  booking_publish_by: String
+  registration_start_date: Int
   status: String
 }
 
@@ -29,6 +44,21 @@ type Vilt {
   is_start_date_decided: Boolean
   is_end_date_decided: Boolean
   curriculum: String
+  pricing_type: String
+  price_per_seat: Int
+  currency: String
+  tax_percentage: Float
+  is_registration_open:Boolean
+  is_booking_open: Boolean
+  max_registrations: Int
+  registration_end_date: Int
+  booking_start_date: Int
+  booking_end_date: Int
+  registration_publish_by: String
+  registration_publish_on: Int
+  booking_publish_on: Int
+  booking_publish_by: String
+  registration_start_date: Int
   created_at: String
   created_by: String
   updated_at: String
@@ -117,4 +147,8 @@ type Query {
   getTopicClassroom(topic_id: String): TopicClassroom
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
   getTrainerData(lsp_id: String, vendor_id: String): [Trainer]
+}
+
+type Subscription {
+  tags(id: String): TopicClassroom
 }

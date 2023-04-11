@@ -15,6 +15,9 @@ import (
 	"github.com/zicops/zicops-vilt-manager/lib/identity"
 )
 
+// course recording available upto
+// recording available/accessible days
+// int
 func CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, error) {
 	claims, err := identity.GetClaimsFromContext(ctx)
 	if err != nil {
@@ -100,6 +103,51 @@ func CreateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, e
 	}
 	if input.IsTrainerDecided != nil {
 		vilt.IsTrainerDecided = *input.IsTrainerDecided
+	}
+	if input.PricingType != nil {
+		vilt.PriceType = *input.PricingType
+	}
+	if input.PricePerSeat != nil {
+		vilt.PricePerSeat = int64(*input.PricePerSeat)
+	}
+	if input.Currency != nil {
+		vilt.Currency = *input.Currency
+	}
+	if input.TaxPercentage != nil {
+		vilt.TaxPercent = float32(*input.TaxPercentage)
+	}
+	if input.IsRegistrationOpen != nil {
+		vilt.IsRegistrationOpen = *input.IsRegistrationOpen
+	}
+	if input.IsBookingOpen != nil {
+		vilt.IsBookingOpen = *input.IsBookingOpen
+	}
+	if input.MaxRegistrations != nil {
+		vilt.MaxRegistrations = int64(*input.MaxRegistrations)
+	}
+	if input.RegistrationEndDate != nil {
+		vilt.RegistrationEndDate = int64(*input.RegistrationEndDate)
+	}
+	if input.BookingStartDate != nil {
+		vilt.BookingStartDate = int64(*input.BookingStartDate)
+	}
+	if input.BookingEndDate != nil {
+		vilt.BookingEndDate = int64(*input.BookingEndDate)
+	}
+	if input.RegistrationPublishBy != nil {
+		vilt.RegistrationPublishBy = *input.RegistrationPublishBy
+	}
+	if input.RegistrationPublishOn != nil {
+		vilt.RegistrationPublishOn = int64(*input.RegistrationPublishOn)
+	}
+	if input.BookingPublishOn != nil {
+		vilt.BookingPublishOn = int64(*input.BookingPublishOn)
+	}
+	if input.BookingPublishBy != nil {
+		vilt.BookingPublishBy = *input.BookingPublishBy
+	}
+	if input.RegistrationStartDate != nil {
+		vilt.RegistrationStartDate = int64(*input.RegistrationStartDate)
 	}
 
 	insertQuery := CassViltSession.Query(viltz.ViltMasterTable.Insert()).BindStruct(vilt)
