@@ -12,7 +12,7 @@ require (
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
 	github.com/sirupsen/logrus v1.9.0
 	github.com/vektah/gqlparser/v2 v2.5.1
-	github.com/zicops/contracts v0.0.0-20230411204130-0720fb29b82d
+	github.com/zicops/contracts v0.0.0-20230412143809-40793f2ffd93
 	github.com/zicops/zicops-cass-pool v0.0.0-20230304193433-3918bccf970c
 	golang.org/x/oauth2 v0.7.0
 	google.golang.org/api v0.117.0
