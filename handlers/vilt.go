@@ -279,6 +279,66 @@ func UpdateViltData(ctx context.Context, input *model.ViltInput) (*model.Vilt, e
 		vilt.Status = *input.Status
 		updatedCols = append(updatedCols, "status")
 	}
+	if input.PricingType != nil {
+		vilt.PriceType = *input.PricingType
+		updatedCols = append(updatedCols, "pricing_type")
+	}
+	if input.PricePerSeat != nil {
+		vilt.PricePerSeat = int64(*input.PricePerSeat)
+		updatedCols = append(updatedCols, "price_per_seat")
+	}
+	if input.Currency != nil {
+		vilt.Currency = *input.Currency
+		updatedCols = append(updatedCols, "currency")
+	}
+	if input.TaxPercentage != nil {
+		vilt.TaxPercent = float32(*input.TaxPercentage)
+		updatedCols = append(updatedCols, "tax_percent")
+	}
+	if input.IsRegistrationOpen != nil {
+		vilt.IsRegistrationOpen = *input.IsRegistrationOpen
+		updatedCols = append(updatedCols, "is_registration_open")
+	}
+	if input.IsBookingOpen != nil {
+		vilt.IsBookingOpen = *input.IsBookingOpen
+		updatedCols = append(updatedCols, "is_booking_open")
+	}
+	if input.MaxRegistrations != nil {
+		vilt.MaxRegistrations = int64(*input.MaxRegistrations)
+		updatedCols = append(updatedCols, "max_registrations")
+	}
+	if input.RegistrationEndDate != nil {
+		vilt.RegistrationEndDate = int64(*input.RegistrationEndDate)
+		updatedCols = append(updatedCols, "registration_end_date")
+	}
+	if input.BookingStartDate != nil {
+		vilt.BookingStartDate = int64(*input.BookingStartDate)
+		updatedCols = append(updatedCols, "booking_start_date")
+	}
+	if input.BookingEndDate != nil {
+		vilt.BookingEndDate = int64(*input.BookingEndDate)
+		updatedCols = append(updatedCols, "booking_end_date")
+	}
+	if input.RegistrationPublishBy != nil {
+		vilt.RegistrationPublishBy = *input.RegistrationPublishBy
+		updatedCols = append(updatedCols, "registration_publish_by")
+	}
+	if input.RegistrationPublishOn != nil {
+		vilt.RegistrationPublishOn = int64(*input.RegistrationPublishOn)
+		updatedCols = append(updatedCols, "registration_publish_on")
+	}
+	if input.BookingPublishOn != nil {
+		vilt.BookingPublishOn = int64(*input.BookingPublishOn)
+		updatedCols = append(updatedCols, "booking_publish_on")
+	}
+	if input.BookingPublishBy != nil {
+		vilt.BookingPublishBy = *input.BookingPublishBy
+		updatedCols = append(updatedCols, "booking_publish_by")
+	}
+	if input.RegistrationStartDate != nil {
+		vilt.RegistrationStartDate = int64(*input.RegistrationStartDate)
+		updatedCols = append(updatedCols, "registration_start_date")
+	}
 	ua := time.Now().Unix()
 	if len(updatedCols) > 0 {
 		updatedCols = append(updatedCols, "updated_at", "updated_by")
@@ -380,25 +440,49 @@ func GetViltData(ctx context.Context, courseID *string) ([]*model.Vilt, error) {
 			ce := strconv.Itoa(int(vilt.CourseEndDate))
 			ca := strconv.Itoa(int(vilt.CreatedAt))
 			ua := strconv.Itoa(int(vilt.UpdatedAt))
+			pps := int(vilt.PricePerSeat)
+			tp := float64(vilt.TaxPercent)
+			mr := int(vilt.MaxRegistrations)
+			red := int(vilt.RegistrationEndDate)
+			bsd := int(vilt.BookingStartDate)
+			bed := int(vilt.BookingEndDate)
+			rpo := int(vilt.RegistrationPublishOn)
+			bpo := int(vilt.BookingPublishOn)
+			rsd := int(vilt.RegistrationStartDate)
 			tmp := model.Vilt{
-				ID:                 &vilt.Id,
-				LspID:              &vilt.LspId,
-				CourseID:           &vilt.CourseId,
-				NoOfLearners:       &learners,
-				Trainers:           trainers,
-				Moderators:         moderators,
-				CourseStartDate:    &cs,
-				CourseEndDate:      &ce,
-				Curriculum:         &vilt.Curriculum,
-				IsTrainerDecided:   &vilt.IsTrainerDecided,
-				IsModeratorDecided: &vilt.IsModeratorDecided,
-				IsStartDateDecided: &vilt.IsStartDateDecided,
-				IsEndDateDecided:   &vilt.IsEndDateDecided,
-				CreatedAt:          &ca,
-				CreatedBy:          &vilt.CreatedBy,
-				UpdatedAt:          &ua,
-				UpdatedBy:          &vilt.UpdatedBy,
-				Status:             &vilt.Status,
+				ID:                    &vilt.Id,
+				LspID:                 &vilt.LspId,
+				CourseID:              &vilt.CourseId,
+				NoOfLearners:          &learners,
+				Trainers:              trainers,
+				Moderators:            moderators,
+				CourseStartDate:       &cs,
+				CourseEndDate:         &ce,
+				Curriculum:            &vilt.Curriculum,
+				IsTrainerDecided:      &vilt.IsTrainerDecided,
+				IsModeratorDecided:    &vilt.IsModeratorDecided,
+				IsStartDateDecided:    &vilt.IsStartDateDecided,
+				IsEndDateDecided:      &vilt.IsEndDateDecided,
+				PricingType:           &vilt.PriceType,
+				PricePerSeat:          &pps,
+				Currency:              &vilt.Currency,
+				TaxPercentage:         &tp,
+				IsRegistrationOpen:    &vilt.IsRegistrationOpen,
+				IsBookingOpen:         &vilt.IsBookingOpen,
+				MaxRegistrations:      &mr,
+				RegistrationEndDate:   &red,
+				BookingStartDate:      &bsd,
+				BookingEndDate:        &bed,
+				RegistrationPublishBy: &vilt.RegistrationPublishBy,
+				RegistrationPublishOn: &rpo,
+				BookingPublishOn:      &bpo,
+				BookingPublishBy:      &vilt.BookingPublishBy,
+				RegistrationStartDate: &rsd,
+				CreatedAt:             &ca,
+				CreatedBy:             &vilt.CreatedBy,
+				UpdatedAt:             &ua,
+				UpdatedBy:             &vilt.UpdatedBy,
+				Status:                &vilt.Status,
 			}
 			res[k] = &tmp
 
