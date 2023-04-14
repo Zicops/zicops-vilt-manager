@@ -2,6 +2,13 @@
 
 package model
 
+type PaginatedTrainer struct {
+	Trainers   []*Trainer `json:"trainers"`
+	PageCursor *string    `json:"pageCursor"`
+	Direction  *string    `json:"Direction"`
+	PageSize   *int       `json:"pageSize"`
+}
+
 type TopicClassroom struct {
 	ID                   *string   `json:"id"`
 	TopicID              *string   `json:"topic_id"`

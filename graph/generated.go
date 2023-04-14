@@ -55,10 +55,17 @@ type ComplexityRoot struct {
 		UpdateViltData       func(childComplexity int, input *model.ViltInput) int
 	}
 
+	PaginatedTrainer struct {
+		Direction  func(childComplexity int) int
+		PageCursor func(childComplexity int) int
+		PageSize   func(childComplexity int) int
+		Trainers   func(childComplexity int) int
+	}
+
 	Query struct {
 		GetTopicClassroom            func(childComplexity int, topicID *string) int
 		GetTopicClassroomsByTopicIds func(childComplexity int, topicIds []*string) int
-		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string) int
+		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) int
 		GetViltData                  func(childComplexity int, courseID *string) int
 		GetViltDataByID              func(childComplexity int, id *string) int
 	}
@@ -153,7 +160,7 @@ type QueryResolver interface {
 	GetViltDataByID(ctx context.Context, id *string) (*model.Vilt, error)
 	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
 	GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error)
-	GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*model.Trainer, error)
+	GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedTrainer, error)
 }
 type SubscriptionResolver interface {
 	Tags(ctx context.Context, id *string) (<-chan *model.TopicClassroom, error)
@@ -246,6 +253,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateViltData(childComplexity, args["input"].(*model.ViltInput)), true
 
+	case "PaginatedTrainer.Direction":
+		if e.complexity.PaginatedTrainer.Direction == nil {
+			break
+		}
+
+		return e.complexity.PaginatedTrainer.Direction(childComplexity), true
+
+	case "PaginatedTrainer.pageCursor":
+		if e.complexity.PaginatedTrainer.PageCursor == nil {
+			break
+		}
+
+		return e.complexity.PaginatedTrainer.PageCursor(childComplexity), true
+
+	case "PaginatedTrainer.pageSize":
+		if e.complexity.PaginatedTrainer.PageSize == nil {
+			break
+		}
+
+		return e.complexity.PaginatedTrainer.PageSize(childComplexity), true
+
+	case "PaginatedTrainer.trainers":
+		if e.complexity.PaginatedTrainer.Trainers == nil {
+			break
+		}
+
+		return e.complexity.PaginatedTrainer.Trainers(childComplexity), true
+
 	case "Query.getTopicClassroom":
 		if e.complexity.Query.GetTopicClassroom == nil {
 			break
@@ -280,7 +315,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetTrainerData(childComplexity, args["lsp_id"].(*string), args["vendor_id"].(*string)), true
+		return e.complexity.Query.GetTrainerData(childComplexity, args["lsp_id"].(*string), args["vendor_id"].(*string), args["pageCursor"].(*string), args["Direction"].(*string), args["pageSize"].(*int)), true
 
 	case "Query.getViltData":
 		if e.complexity.Query.GetViltData == nil {
@@ -1022,6 +1057,33 @@ func (ec *executionContext) field_Query_getTrainerData_args(ctx context.Context,
 		}
 	}
 	args["vendor_id"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["pageCursor"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageCursor"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pageCursor"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["Direction"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Direction"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Direction"] = arg3
+	var arg4 *int
+	if tmp, ok := rawArgs["pageSize"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
+		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pageSize"] = arg4
 	return args, nil
 }
 
@@ -1684,6 +1746,192 @@ func (ec *executionContext) fieldContext_Mutation_updateTrainerData(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _PaginatedTrainer_trainers(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedTrainer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaginatedTrainer_trainers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Trainers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Trainer)
+	fc.Result = res
+	return ec.marshalOTrainer2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTrainer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaginatedTrainer_trainers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaginatedTrainer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Trainer_id(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_Trainer_lsp_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Trainer_user_id(ctx, field)
+			case "vendor_id":
+				return ec.fieldContext_Trainer_vendor_id(ctx, field)
+			case "expertise":
+				return ec.fieldContext_Trainer_expertise(ctx, field)
+			case "status":
+				return ec.fieldContext_Trainer_status(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Trainer_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Trainer_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Trainer_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Trainer_updated_by(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Trainer", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PaginatedTrainer_pageCursor(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedTrainer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaginatedTrainer_pageCursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageCursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaginatedTrainer_pageCursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaginatedTrainer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PaginatedTrainer_Direction(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedTrainer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaginatedTrainer_Direction(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Direction, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaginatedTrainer_Direction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaginatedTrainer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PaginatedTrainer_pageSize(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedTrainer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaginatedTrainer_pageSize(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageSize, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaginatedTrainer_pageSize(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaginatedTrainer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getViltData(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getViltData(ctx, field)
 	if err != nil {
@@ -2126,7 +2374,7 @@ func (ec *executionContext) _Query_getTrainerData(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetTrainerData(rctx, fc.Args["lsp_id"].(*string), fc.Args["vendor_id"].(*string))
+		return ec.resolvers.Query().GetTrainerData(rctx, fc.Args["lsp_id"].(*string), fc.Args["vendor_id"].(*string), fc.Args["pageCursor"].(*string), fc.Args["Direction"].(*string), fc.Args["pageSize"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2135,9 +2383,9 @@ func (ec *executionContext) _Query_getTrainerData(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Trainer)
+	res := resTmp.(*model.PaginatedTrainer)
 	fc.Result = res
-	return ec.marshalOTrainer2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTrainer(ctx, field.Selections, res)
+	return ec.marshalOPaginatedTrainer2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐPaginatedTrainer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getTrainerData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2148,28 +2396,16 @@ func (ec *executionContext) fieldContext_Query_getTrainerData(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Trainer_id(ctx, field)
-			case "lsp_id":
-				return ec.fieldContext_Trainer_lsp_id(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Trainer_user_id(ctx, field)
-			case "vendor_id":
-				return ec.fieldContext_Trainer_vendor_id(ctx, field)
-			case "expertise":
-				return ec.fieldContext_Trainer_expertise(ctx, field)
-			case "status":
-				return ec.fieldContext_Trainer_status(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Trainer_created_at(ctx, field)
-			case "created_by":
-				return ec.fieldContext_Trainer_created_by(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Trainer_updated_at(ctx, field)
-			case "updated_by":
-				return ec.fieldContext_Trainer_updated_by(ctx, field)
+			case "trainers":
+				return ec.fieldContext_PaginatedTrainer_trainers(ctx, field)
+			case "pageCursor":
+				return ec.fieldContext_PaginatedTrainer_pageCursor(ctx, field)
+			case "Direction":
+				return ec.fieldContext_PaginatedTrainer_Direction(ctx, field)
+			case "pageSize":
+				return ec.fieldContext_PaginatedTrainer_pageSize(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Trainer", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type PaginatedTrainer", field.Name)
 		},
 	}
 	defer func() {
@@ -7337,6 +7573,43 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var paginatedTrainerImplementors = []string{"PaginatedTrainer"}
+
+func (ec *executionContext) _PaginatedTrainer(ctx context.Context, sel ast.SelectionSet, obj *model.PaginatedTrainer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, paginatedTrainerImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PaginatedTrainer")
+		case "trainers":
+
+			out.Values[i] = ec._PaginatedTrainer_trainers(ctx, field, obj)
+
+		case "pageCursor":
+
+			out.Values[i] = ec._PaginatedTrainer_pageCursor(ctx, field, obj)
+
+		case "Direction":
+
+			out.Values[i] = ec._PaginatedTrainer_Direction(ctx, field, obj)
+
+		case "pageSize":
+
+			out.Values[i] = ec._PaginatedTrainer_pageSize(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -8471,6 +8744,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOPaginatedTrainer2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐPaginatedTrainer(ctx context.Context, sel ast.SelectionSet, v *model.PaginatedTrainer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PaginatedTrainer(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
