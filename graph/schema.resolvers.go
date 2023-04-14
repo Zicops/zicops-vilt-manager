@@ -113,8 +113,8 @@ func (r *queryResolver) GetTopicClassroomsByTopicIds(ctx context.Context, topicI
 }
 
 // GetTrainerData is the resolver for the getTrainerData field.
-func (r *queryResolver) GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*model.Trainer, error) {
-	resp, err := handlers.GetTrainerData(ctx, lspID, vendorID)
+func (r *queryResolver) GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedTrainer, error) {
+	resp, err := handlers.GetTrainerData(ctx, lspID, vendorID, pageCursor, direction, pageSize)
 	if err != nil {
 		log.Printf("Got error while getting trainer: %v", err)
 		return nil, err

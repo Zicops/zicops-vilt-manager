@@ -168,7 +168,7 @@ func UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 	return &res, nil
 }
 
-func GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*model.Trainer, error) {
+func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedTrainer, error) {
 	claims, err := identity.GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -176,6 +176,21 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*mo
 	lsp := claims["lsp_id"].(string)
 	if lspID != nil {
 		lsp = *lspID
+	}
+
+	var newPage []byte
+	if pageCursor != nil && *pageCursor != "" {
+		page, err := global.CryptSession.DecryptString(*pageCursor, nil)
+		if err != nil {
+			return nil, err
+		}
+		newPage = page
+	}
+	var pageSizeInt int
+	if pageSize != nil {
+		pageSizeInt = *pageSize
+	} else {
+		pageSizeInt = 10
 	}
 
 	session, err := global.CassPool.GetSession(ctx, "viltz")
@@ -190,17 +205,28 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*mo
 	}
 	qryStr += `ALLOW FILTERING`
 
-	getTrainers := func() (trainersData []viltz.ViltTrainer, err error) {
+	getTrainers := func(page []byte) (trainersData []viltz.ViltTrainer, newPage []byte, err error) {
 		q := CassSession.Query(qryStr, nil)
 		defer q.Release()
+		q.PageState(page)
+		q.PageSize(pageSizeInt)
 		iter := q.Iter()
-		return trainersData, iter.Select(&trainersData)
+		return trainersData, iter.PageState(), iter.Select(&trainersData)
 	}
 
-	trainers, err := getTrainers()
+	trainers, newPage, err := getTrainers(newPage)
 	if err != nil {
 		return nil, err
 	}
+
+	var newCursor string
+	if len(newPage) != 0 {
+		newCursor, err = global.CryptSession.EncryptAsString(newPage, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if len(trainers) == 0 {
 		return nil, nil
 	}
@@ -236,5 +262,11 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string) ([]*mo
 	}
 	wg.Wait()
 
-	return res, nil
+	result := model.PaginatedTrainer{
+		Trainers:   res,
+		PageCursor: &newCursor,
+		PageSize:   &pageSizeInt,
+		Direction:  direction,
+	}
+	return &result, nil
 }
