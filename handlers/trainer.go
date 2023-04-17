@@ -231,7 +231,7 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCu
 		return nil, nil
 	}
 
-	var res []*model.Trainer
+	res := make([]*model.Trainer, len(trainers))
 	var wg sync.WaitGroup
 	for kk, vv := range trainers {
 		wg.Add(1)
