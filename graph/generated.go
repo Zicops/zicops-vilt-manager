@@ -65,6 +65,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetTopicClassroom            func(childComplexity int, topicID *string) int
 		GetTopicClassroomsByTopicIds func(childComplexity int, topicIds []*string) int
+		GetTrainerByID               func(childComplexity int, id *string) int
 		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) int
 		GetViltData                  func(childComplexity int, courseID *string) int
 		GetViltDataByID              func(childComplexity int, id *string) int
@@ -161,6 +162,7 @@ type QueryResolver interface {
 	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
 	GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error)
 	GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedTrainer, error)
+	GetTrainerByID(ctx context.Context, id *string) (*model.Trainer, error)
 }
 type SubscriptionResolver interface {
 	Tags(ctx context.Context, id *string) (<-chan *model.TopicClassroom, error)
@@ -304,6 +306,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetTopicClassroomsByTopicIds(childComplexity, args["topic_ids"].([]*string)), true
+
+	case "Query.getTrainerById":
+		if e.complexity.Query.GetTrainerByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTrainerById_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTrainerByID(childComplexity, args["id"].(*string)), true
 
 	case "Query.getTrainerData":
 		if e.complexity.Query.GetTrainerData == nil {
@@ -1033,6 +1047,21 @@ func (ec *executionContext) field_Query_getTopicClassroomsByTopicIds_args(ctx co
 		}
 	}
 	args["topic_ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTrainerById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -2416,6 +2445,80 @@ func (ec *executionContext) fieldContext_Query_getTrainerData(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getTrainerData_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getTrainerById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getTrainerById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTrainerByID(rctx, fc.Args["id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Trainer)
+	fc.Result = res
+	return ec.marshalOTrainer2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTrainer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getTrainerById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Trainer_id(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_Trainer_lsp_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Trainer_user_id(ctx, field)
+			case "vendor_id":
+				return ec.fieldContext_Trainer_vendor_id(ctx, field)
+			case "expertise":
+				return ec.fieldContext_Trainer_expertise(ctx, field)
+			case "status":
+				return ec.fieldContext_Trainer_status(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Trainer_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Trainer_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Trainer_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Trainer_updated_by(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Trainer", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getTrainerById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7719,6 +7822,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getTrainerData(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getTrainerById":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTrainerById(ctx, field)
 				return res
 			}
 

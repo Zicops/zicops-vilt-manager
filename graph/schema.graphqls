@@ -154,6 +154,7 @@ type Query {
   getTopicClassroom(topic_id: String): TopicClassroom
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
   getTrainerData(lsp_id: String, vendor_id: String, pageCursor: String, Direction: String, pageSize: Int): PaginatedTrainer
+  getTrainerById(id: String): Trainer
 }
 
 type Subscription {
