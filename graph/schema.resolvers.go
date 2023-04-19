@@ -122,6 +122,16 @@ func (r *queryResolver) GetTrainerData(ctx context.Context, lspID *string, vendo
 	return resp, nil
 }
 
+// GetTrainerByID is the resolver for the getTrainerById field.
+func (r *queryResolver) GetTrainerByID(ctx context.Context, id *string) (*model.Trainer, error) {
+	resp, err := handlers.GetTrainerByID(ctx, id)
+	if err != nil {
+		log.Printf("Got error while getting trainer: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Tags is the resolver for the tags field.
 func (r *subscriptionResolver) Tags(ctx context.Context, id *string) (<-chan *model.TopicClassroom, error) {
 	panic(fmt.Errorf("not implemented: Tags - tags"))

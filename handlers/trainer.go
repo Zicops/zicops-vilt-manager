@@ -271,6 +271,59 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCu
 	return &result, nil
 }
 
+func GetTrainerByID(ctx context.Context, id *string) (*model.Trainer, error) {
+	if id == nil {
+		return nil, fmt.Errorf("please enter id")
+	}
+	_, err := identity.GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := global.CassPool.GetSession(ctx, "viltz")
+	if err != nil {
+		return nil, err
+	}
+	CassSession := session
+
+	qryStr := fmt.Sprintf(`SELECT * FROM viltz.trainer WHERE id='%s' ALLOW FILTERING`, *id)
+	getTrainer := func() (trainerData []viltz.ViltTrainer, err error) {
+		q := CassSession.Query(qryStr, nil)
+		defer q.Release()
+		iter := q.Iter()
+		return trainerData, iter.Select(&trainerData)
+	}
+	trainers, err := getTrainer()
+	if err != nil {
+		return nil, err
+	}
+	if len(trainers) == 0 {
+		return nil, nil
+	}
+	trainer := trainers[0]
+
+	var exp []*string
+	for _, vv := range trainer.Expertise {
+		v := vv
+		exp = append(exp, &v)
+	}
+	ua := strconv.Itoa(int(trainer.UpdatedAt))
+	ca := strconv.Itoa(int(trainer.CreatedAt))
+	res := model.Trainer{
+		ID:        &trainer.TrainerId,
+		LspID:     &trainer.LspId,
+		UserID:    &trainer.UserId,
+		VendorID:  &trainer.VendorId,
+		Expertise: exp,
+		Status:    &trainer.Status,
+		UpdatedAt: &ua,
+		UpdatedBy: &trainer.UpdatedBy,
+		CreatedAt: &ca,
+		CreatedBy: &trainer.CreatedBy,
+	}
+	return &res, nil
+}
+
 //low standard high hd
 //tile view, grid view
 
