@@ -270,3 +270,9 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCu
 	}
 	return &result, nil
 }
+
+//low standard high hd
+//tile view, grid view
+
+//media server- gcs bucket redirection, link
+//local recording, to gcs
