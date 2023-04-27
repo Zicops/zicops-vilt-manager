@@ -168,7 +168,7 @@ func UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 	return &res, nil
 }
 
-func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedTrainer, error) {
+func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int, filters *model.TrainerFilters) (*model.PaginatedTrainer, error) {
 	claims, err := identity.GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -203,6 +203,16 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCu
 	if vendorID != nil {
 		qryStr += fmt.Sprintf(`AND vendor_id='%s' `, *vendorID)
 	}
+	// //list of users ids from trainer
+	// //among those, search on basis of name
+	// if filters != nil && filters.Name != nil {
+	// 	name := strings.ToLower(*filters.Name)
+	// 	namesArray := strings.Fields(name)
+	// 	for _, vv := range namesArray {
+	// 		v := vv
+	// 		qryStr += fmt.Sprintf(` AND name CONTAINS '%s' `, v)
+	// 	}
+	// }
 	qryStr += `ALLOW FILTERING`
 
 	getTrainers := func(page []byte) (trainersData []viltz.ViltTrainer, newPage []byte, err error) {
