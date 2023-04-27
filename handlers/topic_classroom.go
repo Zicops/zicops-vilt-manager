@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -553,16 +556,64 @@ func GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*m
 
 func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClassroomInput) error {
 
-	_, err := global.Client.Collection("ClassroomFlags").Doc(id).Set(ctx, map[string]interface{}{
-		"is_microphone_enabled":     input.IsMicrophoneEnabled,
-		"is_screen_sharing_enabled": input.IsScreenShareEnabled,
-		"is_chat_enabled":           input.IsChatEnabled,
-		"is_qa_enabled":             input.IsQaEnabled,
-		"is_video_sharing_enabled":  input.IsCameraEnabled,
-	})
-
+	claims, err := identity.GetClaimsFromContext(ctx)
 	if err != nil {
 		return err
 	}
+	lsp := claims["lsp_id"].(string)
+
+	query := fmt.Sprintf(`
+	{
+	   addClassroomFlags(input: {
+		 is_microphone_enabled: %b
+		 is_screen_sharing_enabled: %b
+		 is_chat_enabled: %b
+		 is_qa_enabled: %b
+		 is_video_sharing_enabled: %b
+		 
+	   }) {
+		 id
+		 is_classroom_started
+		 is_participants_present
+		 is_ad_displayed
+		 is_break
+		 is_moderator_joined
+		 is_trainer_joined
+		 ad_video_url
+		 is_microphone_enabled
+		 is_video_sharing_enabled
+		 is_screen_sharing_enabled
+		 is_chat_enabled
+		 is_qa_enabled
+		 quiz
+	   }
+	 }
+	 
+   `, input.IsMicrophoneEnabled, input.IsScreenShareEnabled, input.IsChatEnabled, input.IsQaEnabled, input.IsCameraEnabled)
+	jsonData := map[string]string{
+		"mutation": query,
+	}
+
+	jsonValue, err := json.Marshal(jsonData)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", "https://demo.zicops.com/ns/query", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		return err
+	}
+	ctxStr := fmt.Sprintf("%v", ctx)
+	req.Header.Set("Authorization", ctxStr)
+	req.Header.Set("fcm-token", "fcm-token")
+	req.Header.Set("tenant", lsp)
+
+	client := &http.Client{Timeout: time.Second * 30}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	log.Printf("Status code for %s is %v", *input.ID, resp.StatusCode)
 	return nil
 }
