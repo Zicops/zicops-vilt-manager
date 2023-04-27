@@ -66,6 +66,10 @@ type Trainer struct {
 	UpdatedBy *string   `json:"updated_by"`
 }
 
+type TrainerFilters struct {
+	Name *string `json:"name"`
+}
+
 type TrainerInput struct {
 	ID        *string   `json:"id"`
 	LspID     *string   `json:"lsp_id"`

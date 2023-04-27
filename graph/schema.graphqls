@@ -139,6 +139,10 @@ type PaginatedTrainer {
   pageSize: Int
 }
 
+input TrainerFilters {
+  name: String
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
@@ -153,7 +157,7 @@ type Query {
   getViltDataById(id: String): Vilt
   getTopicClassroom(topic_id: String): TopicClassroom
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
-  getTrainerData(lsp_id: String, vendor_id: String, pageCursor: String, Direction: String, pageSize: Int): PaginatedTrainer
+  getTrainerData(lsp_id: String, vendor_id: String, pageCursor: String, Direction: String, pageSize: Int, filters: TrainerFilters): PaginatedTrainer
   getTrainerById(id: String): Trainer
 }
 

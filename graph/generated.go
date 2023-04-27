@@ -66,7 +66,7 @@ type ComplexityRoot struct {
 		GetTopicClassroom            func(childComplexity int, topicID *string) int
 		GetTopicClassroomsByTopicIds func(childComplexity int, topicIds []*string) int
 		GetTrainerByID               func(childComplexity int, id *string) int
-		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) int
+		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int, filters *model.TrainerFilters) int
 		GetViltData                  func(childComplexity int, courseID *string) int
 		GetViltDataByID              func(childComplexity int, id *string) int
 	}
@@ -161,7 +161,7 @@ type QueryResolver interface {
 	GetViltDataByID(ctx context.Context, id *string) (*model.Vilt, error)
 	GetTopicClassroom(ctx context.Context, topicID *string) (*model.TopicClassroom, error)
 	GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*model.TopicClassroom, error)
-	GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedTrainer, error)
+	GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int, filters *model.TrainerFilters) (*model.PaginatedTrainer, error)
 	GetTrainerByID(ctx context.Context, id *string) (*model.Trainer, error)
 }
 type SubscriptionResolver interface {
@@ -329,7 +329,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetTrainerData(childComplexity, args["lsp_id"].(*string), args["vendor_id"].(*string), args["pageCursor"].(*string), args["Direction"].(*string), args["pageSize"].(*int)), true
+		return e.complexity.Query.GetTrainerData(childComplexity, args["lsp_id"].(*string), args["vendor_id"].(*string), args["pageCursor"].(*string), args["Direction"].(*string), args["pageSize"].(*int), args["filters"].(*model.TrainerFilters)), true
 
 	case "Query.getViltData":
 		if e.complexity.Query.GetViltData == nil {
@@ -817,6 +817,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputTopicClassroomInput,
+		ec.unmarshalInputTrainerFilters,
 		ec.unmarshalInputTrainerInput,
 		ec.unmarshalInputViltInput,
 	)
@@ -1113,6 +1114,15 @@ func (ec *executionContext) field_Query_getTrainerData_args(ctx context.Context,
 		}
 	}
 	args["pageSize"] = arg4
+	var arg5 *model.TrainerFilters
+	if tmp, ok := rawArgs["filters"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filters"))
+		arg5, err = ec.unmarshalOTrainerFilters2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTrainerFilters(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filters"] = arg5
 	return args, nil
 }
 
@@ -2403,7 +2413,7 @@ func (ec *executionContext) _Query_getTrainerData(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetTrainerData(rctx, fc.Args["lsp_id"].(*string), fc.Args["vendor_id"].(*string), fc.Args["pageCursor"].(*string), fc.Args["Direction"].(*string), fc.Args["pageSize"].(*int))
+		return ec.resolvers.Query().GetTrainerData(rctx, fc.Args["lsp_id"].(*string), fc.Args["vendor_id"].(*string), fc.Args["pageCursor"].(*string), fc.Args["Direction"].(*string), fc.Args["pageSize"].(*int), fc.Args["filters"].(*model.TrainerFilters))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7282,6 +7292,34 @@ func (ec *executionContext) unmarshalInputTopicClassroomInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTrainerFilters(ctx context.Context, obj interface{}) (model.TrainerFilters, error) {
+	var it model.TrainerFilters
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTrainerInput(ctx context.Context, obj interface{}) (model.TrainerInput, error) {
 	var it model.TrainerInput
 	asMap := map[string]interface{}{}
@@ -9026,6 +9064,14 @@ func (ec *executionContext) marshalOTrainer2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑ
 		return graphql.Null
 	}
 	return ec._Trainer(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTrainerFilters2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTrainerFilters(ctx context.Context, v interface{}) (*model.TrainerFilters, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTrainerFilters(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOTrainerInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTrainerInput(ctx context.Context, v interface{}) (*model.TrainerInput, error) {

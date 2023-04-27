@@ -115,6 +115,10 @@ func CreateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 	if input.IsScreenShareEnabled != nil {
 		topic.IsScreenShareEnabled = *input.IsScreenShareEnabled
 	}
+	err = setFlagsInFirestore(ctx, id, input)
+	if err != nil {
+		return nil, err
+	}
 	if input.Status != nil {
 		topic.Status = *input.Status
 	}
@@ -355,6 +359,10 @@ func UpdateTopicClassroom(ctx context.Context, input *model.TopicClassroomInput)
 		topic.Language = *input.Language
 		updatedCols = append(updatedCols, "language")
 	}
+	err = setFlagsInFirestore(ctx, *input.ID, input)
+	if err != nil {
+		return nil, err
+	}
 	if input.Moderators != nil {
 		var tmp []string
 		for _, vv := range input.Moderators {
@@ -541,4 +549,20 @@ func GetTopicClassroomsByTopicIds(ctx context.Context, topicIds []*string) ([]*m
 	}
 	wg.Wait()
 	return res, nil
+}
+
+func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClassroomInput) error {
+
+	_, err := global.Client.Collection("ClassroomFlags").Doc(id).Set(ctx, map[string]interface{}{
+		"is_microphone_enabled":     input.IsMicrophoneEnabled,
+		"is_screen_sharing_enabled": input.IsScreenShareEnabled,
+		"is_chat_enabled":           input.IsChatEnabled,
+		"is_qa_enabled":             input.IsQaEnabled,
+		"is_video_sharing_enabled":  input.IsCameraEnabled,
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
