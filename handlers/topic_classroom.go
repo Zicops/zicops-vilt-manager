@@ -561,7 +561,6 @@ func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClass
 		return err
 	}
 	lsp := claims["lsp_id"].(string)
-
 	query := fmt.Sprintf(`
 	{
 	   addClassroomFlags(input: {
