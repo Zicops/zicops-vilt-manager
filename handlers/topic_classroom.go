@@ -565,6 +565,7 @@ func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClass
 	query := fmt.Sprintf(`
 	{
 	   addClassroomFlags(input: {
+		 id: %s
 		 is_microphone_enabled: %b
 		 is_screen_sharing_enabled: %b
 		 is_chat_enabled: %b
@@ -589,7 +590,7 @@ func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClass
 	   }
 	 }
 	 
-   `, input.IsMicrophoneEnabled, input.IsScreenShareEnabled, input.IsChatEnabled, input.IsQaEnabled, input.IsCameraEnabled)
+   `, id, input.IsMicrophoneEnabled, input.IsScreenShareEnabled, input.IsChatEnabled, input.IsQaEnabled, input.IsCameraEnabled)
 	jsonData := map[string]string{
 		"mutation": query,
 	}
