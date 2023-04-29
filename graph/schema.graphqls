@@ -143,6 +143,28 @@ input TrainerFilters {
   name: String
 }
 
+input UserCourseRegisterInput {
+  id: String
+  course_id: String
+  user_id: String
+  registration_date: Int
+  invoice: String
+  status: String
+}
+
+type UserCourseRegister {
+  id: String
+  course_id: String
+  user_id: String
+  registration_date: Int
+  invoice: String
+  status: String
+  created_at: String
+  created_by: String
+  updated_at: String
+  updated_by: String
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
@@ -150,6 +172,7 @@ type Mutation {
   updateTopicClassroom(input: TopicClassroomInput): TopicClassroom
   createTrainerData(input: TrainerInput): Trainer
   updateTrainerData(input: TrainerInput): Trainer
+  registerUserForCourse(input: UserCourseRegisterInput): UserCourseRegister
 }
 
 type Query {
@@ -159,8 +182,5 @@ type Query {
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
   getTrainerData(lsp_id: String, vendor_id: String, pageCursor: String, Direction: String, pageSize: Int, filters: TrainerFilters): PaginatedTrainer
   getTrainerById(id: String): Trainer
-}
-
-type Subscription {
-  tags(id: String): TopicClassroom
+  getAllRegistrations(course_id: String): UserCourseRegister
 }

@@ -79,6 +79,28 @@ type TrainerInput struct {
 	Status    *string   `json:"status"`
 }
 
+type UserCourseRegister struct {
+	ID               *string `json:"id"`
+	CourseID         *string `json:"course_id"`
+	UserID           *string `json:"user_id"`
+	RegistrationDate *int    `json:"registration_date"`
+	Invoice          *string `json:"invoice"`
+	Status           *string `json:"status"`
+	CreatedAt        *string `json:"created_at"`
+	CreatedBy        *string `json:"created_by"`
+	UpdatedAt        *string `json:"updated_at"`
+	UpdatedBy        *string `json:"updated_by"`
+}
+
+type UserCourseRegisterInput struct {
+	ID               *string `json:"id"`
+	CourseID         *string `json:"course_id"`
+	UserID           *string `json:"user_id"`
+	RegistrationDate *int    `json:"registration_date"`
+	Invoice          *string `json:"invoice"`
+	Status           *string `json:"status"`
+}
+
 type Vilt struct {
 	ID                    *string   `json:"id"`
 	LspID                 *string   `json:"lsp_id"`
