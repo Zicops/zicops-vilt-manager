@@ -72,6 +72,16 @@ func (r *mutationResolver) UpdateTrainerData(ctx context.Context, input *model.T
 	return resp, nil
 }
 
+// RegisterUserForCourse is the resolver for the registerUserForCourse field.
+func (r *mutationResolver) RegisterUserForCourse(ctx context.Context, input *model.UserCourseRegisterInput) (*model.UserCourseRegister, error) {
+	resp, err := handlers.RegisterUserForCourse(ctx, input)
+	if err != nil {
+		log.Printf("Got error while registering user to course: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetViltData is the resolver for the getViltData field.
 func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) ([]*model.Vilt, error) {
 	resp, err := handlers.GetViltData(ctx, courseID)
@@ -132,9 +142,9 @@ func (r *queryResolver) GetTrainerByID(ctx context.Context, id *string) (*model.
 	return resp, nil
 }
 
-// Tags is the resolver for the tags field.
-func (r *subscriptionResolver) Tags(ctx context.Context, id *string) (<-chan *model.TopicClassroom, error) {
-	panic(fmt.Errorf("not implemented: Tags - tags"))
+// GetAllRegistrations is the resolver for the getAllRegistrations field.
+func (r *queryResolver) GetAllRegistrations(ctx context.Context, courseID *string) (*model.UserCourseRegister, error) {
+	panic(fmt.Errorf("not implemented: GetAllRegistrations - getAllRegistrations"))
 }
 
 // Mutation returns MutationResolver implementation.
@@ -143,9 +153,5 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-// Subscription returns SubscriptionResolver implementation.
-func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
-
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-type subscriptionResolver struct{ *Resolver }
