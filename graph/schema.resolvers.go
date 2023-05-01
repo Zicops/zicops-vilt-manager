@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/zicops/zicops-vilt-manager/graph/model"
@@ -82,6 +81,16 @@ func (r *mutationResolver) RegisterUserForCourse(ctx context.Context, input *mod
 	return resp, nil
 }
 
+// UpdateRegistrationForCourse is the resolver for the updateRegistrationForCourse field.
+func (r *mutationResolver) UpdateRegistrationForCourse(ctx context.Context, input *model.UserCourseRegisterInput) (*model.UserCourseRegister, error) {
+	resp, err := handlers.UpdateRegistrationForCourse(ctx, input)
+	if err != nil {
+		log.Printf("Got error while updating registeration for course: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetViltData is the resolver for the getViltData field.
 func (r *queryResolver) GetViltData(ctx context.Context, courseID *string) ([]*model.Vilt, error) {
 	resp, err := handlers.GetViltData(ctx, courseID)
@@ -143,8 +152,23 @@ func (r *queryResolver) GetTrainerByID(ctx context.Context, id *string) (*model.
 }
 
 // GetAllRegistrations is the resolver for the getAllRegistrations field.
-func (r *queryResolver) GetAllRegistrations(ctx context.Context, courseID *string) (*model.UserCourseRegister, error) {
-	panic(fmt.Errorf("not implemented: GetAllRegistrations - getAllRegistrations"))
+func (r *queryResolver) GetAllRegistrations(ctx context.Context, courseID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedUserCourseRegister, error) {
+	resp, err := handlers.GetAllRegistrations(ctx, courseID, pageCursor, direction, pageSize)
+	if err != nil {
+		log.Printf("Got error while getting all registrations: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// GetRegistrationDetails is the resolver for the getRegistrationDetails field.
+func (r *queryResolver) GetRegistrationDetails(ctx context.Context, id *string) (*model.UserCourseRegister, error) {
+	resp, err := handlers.GetRegistrationDetails(ctx, id)
+	if err != nil {
+		log.Printf("Got error while getting registration details: %v", err)
+		return nil, err
+	}
+	return resp, nil
 }
 
 // Mutation returns MutationResolver implementation.
