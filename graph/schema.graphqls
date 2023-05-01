@@ -165,6 +165,13 @@ type UserCourseRegister {
   updated_by: String
 }
 
+type PaginatedUserCourseRegister {
+  data: [UserCourseRegister]
+  pageCursor: String
+  direction: String
+  pageSize: Int
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
@@ -173,6 +180,7 @@ type Mutation {
   createTrainerData(input: TrainerInput): Trainer
   updateTrainerData(input: TrainerInput): Trainer
   registerUserForCourse(input: UserCourseRegisterInput): UserCourseRegister
+  updateRegistrationForCourse(input: UserCourseRegisterInput): UserCourseRegister
 }
 
 type Query {
@@ -182,5 +190,6 @@ type Query {
   getTopicClassroomsByTopicIds(topic_ids: [String]): [TopicClassroom]
   getTrainerData(lsp_id: String, vendor_id: String, pageCursor: String, Direction: String, pageSize: Int, filters: TrainerFilters): PaginatedTrainer
   getTrainerById(id: String): Trainer
-  getAllRegistrations(course_id: String): UserCourseRegister
+  getAllRegistrations(course_id: String, pageCursor: String, Direction: String, pageSize: Int): PaginatedUserCourseRegister
+  getRegistrationDetails(id: String): UserCourseRegister
 }

@@ -9,6 +9,13 @@ type PaginatedTrainer struct {
 	PageSize   *int       `json:"pageSize"`
 }
 
+type PaginatedUserCourseRegister struct {
+	Data       []*UserCourseRegister `json:"data"`
+	PageCursor *string               `json:"pageCursor"`
+	Direction  *string               `json:"direction"`
+	PageSize   *int                  `json:"pageSize"`
+}
+
 type TopicClassroom struct {
 	ID                   *string   `json:"id"`
 	TopicID              *string   `json:"topic_id"`
