@@ -106,10 +106,6 @@ func UpdateRegistrationForCourse(ctx context.Context, input *model.UserCourseReg
 	registration := registrations[0]
 
 	var updatedCols []string
-	if input.CourseID != nil {
-		registration.CourseId = *input.CourseID
-		updatedCols = append(updatedCols, "course_id")
-	}
 	if input.Invoice != nil {
 		registration.Invoice = *input.Invoice
 		updatedCols = append(updatedCols, "invoice")
