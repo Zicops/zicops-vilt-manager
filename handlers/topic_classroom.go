@@ -614,6 +614,6 @@ func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClass
 	}
 	defer resp.Body.Close()
 
-	log.Printf("Status code for %s is %v", *input.ID, resp.StatusCode)
+	log.Printf("Status code for %s is %v", id, resp.StatusCode)
 	return nil
 }
