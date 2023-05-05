@@ -171,6 +171,16 @@ func (r *queryResolver) GetRegistrationDetails(ctx context.Context, id *string) 
 	return resp, nil
 }
 
+// GetCourseTrainers is the resolver for the getCourseTrainers field.
+func (r *queryResolver) GetCourseTrainers(ctx context.Context, courseID *string) ([]*string, error) {
+	resp, err := handlers.GetCourseTrainers(ctx, courseID)
+	if err != nil {
+		log.Printf("Got error while getting trainers for course: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 

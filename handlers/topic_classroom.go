@@ -602,7 +602,8 @@ func setFlagsInFirestore(ctx context.Context, id string, input *model.TopicClass
 	if err != nil {
 		return err
 	}
-	ctxStr := fmt.Sprintf("%v", ctx)
+	ctxStr := fmt.Sprintf("%v", ctx.Value("zclaims"))
+	ctxStr = "Bearer " + ctxStr
 	req.Header.Set("Authorization", ctxStr)
 	req.Header.Set("fcm-token", "fcm-token")
 	req.Header.Set("tenant", lsp)
