@@ -100,16 +100,21 @@ type TopicClassroomInput struct {
 }
 
 type Trainer struct {
-	ID        *string   `json:"id"`
-	LspID     *string   `json:"lsp_id"`
-	UserID    *string   `json:"user_id"`
-	VendorID  *string   `json:"vendor_id"`
-	Expertise []*string `json:"expertise"`
-	Status    *string   `json:"status"`
-	CreatedAt *string   `json:"created_at"`
-	CreatedBy *string   `json:"created_by"`
-	UpdatedAt *string   `json:"updated_at"`
-	UpdatedBy *string   `json:"updated_by"`
+	ID                *string   `json:"id"`
+	LspID             *string   `json:"lsp_id"`
+	UserID            *string   `json:"user_id"`
+	VendorID          *string   `json:"vendor_id"`
+	Expertise         []*string `json:"expertise"`
+	Status            *string   `json:"status"`
+	YearsOfExperience *string   `json:"years_of_experience"`
+	Website           *string   `json:"website"`
+	Linkedin          *string   `json:"linkedin"`
+	Github            *string   `json:"github"`
+	Description       *string   `json:"description"`
+	CreatedAt         *string   `json:"created_at"`
+	CreatedBy         *string   `json:"created_by"`
+	UpdatedAt         *string   `json:"updated_at"`
+	UpdatedBy         *string   `json:"updated_by"`
 }
 
 type TrainerFilters struct {
@@ -117,12 +122,17 @@ type TrainerFilters struct {
 }
 
 type TrainerInput struct {
-	ID        *string   `json:"id"`
-	LspID     *string   `json:"lsp_id"`
-	UserID    *string   `json:"user_id"`
-	VendorID  *string   `json:"vendor_id"`
-	Expertise []*string `json:"expertise"`
-	Status    *string   `json:"status"`
+	ID                *string   `json:"id"`
+	LspID             *string   `json:"lsp_id"`
+	UserID            *string   `json:"user_id"`
+	VendorID          *string   `json:"vendor_id"`
+	Expertise         []*string `json:"expertise"`
+	Status            *string   `json:"status"`
+	YearsOfExperience *string   `json:"years_of_experience"`
+	Website           *string   `json:"website"`
+	Linkedin          *string   `json:"linkedin"`
+	Github            *string   `json:"github"`
+	Description       *string   `json:"description"`
 }
 
 type UserCourseRegister struct {

@@ -66,6 +66,21 @@ func CreateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 	if input.Status != nil {
 		trainer.Status = *input.Status
 	}
+	if input.YearsOfExperience != nil {
+		trainer.YearsOfExperience = *input.YearsOfExperience
+	}
+	if input.Description != nil {
+		trainer.Description = *input.Description
+	}
+	if input.Github != nil {
+		trainer.Github = *input.Github
+	}
+	if input.Linkedin != nil {
+		trainer.LinkedIn = *input.Linkedin
+	}
+	if input.Website != nil {
+		trainer.Website = *input.Website
+	}
 
 	insertQuery := CassSession.Query(viltz.ViltTrainerTable.Insert()).BindStruct(trainer)
 	if err = insertQuery.Exec(); err != nil {
@@ -74,16 +89,21 @@ func CreateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 
 	ca := strconv.Itoa(int(createdAt))
 	res := model.Trainer{
-		ID:        &id,
-		LspID:     &lsp,
-		UserID:    input.UserID,
-		VendorID:  input.VendorID,
-		Expertise: input.Expertise,
-		Status:    input.Status,
-		CreatedAt: &ca,
-		CreatedBy: &email,
-		UpdatedAt: &ca,
-		UpdatedBy: &email,
+		ID:                &id,
+		LspID:             &lsp,
+		UserID:            input.UserID,
+		VendorID:          input.VendorID,
+		Expertise:         input.Expertise,
+		Status:            input.Status,
+		YearsOfExperience: input.YearsOfExperience,
+		Website:           input.Website,
+		Linkedin:          input.Linkedin,
+		Github:            input.Github,
+		Description:       input.Description,
+		CreatedAt:         &ca,
+		CreatedBy:         &email,
+		UpdatedAt:         &ca,
+		UpdatedBy:         &email,
 	}
 
 	return &res, nil
@@ -136,6 +156,26 @@ func UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 		trainer.Status = *input.Status
 		updatedCols = append(updatedCols, "status")
 	}
+	if input.Website != nil {
+		trainer.Website = *input.Website
+		updatedCols = append(updatedCols, "website")
+	}
+	if input.Description != nil {
+		trainer.Description = *input.Description
+		updatedCols = append(updatedCols, "description")
+	}
+	if input.Github != nil {
+		trainer.Github = *input.Github
+		updatedCols = append(updatedCols, "github")
+	}
+	if input.Linkedin != nil {
+		trainer.LinkedIn = *input.Linkedin
+		updatedCols = append(updatedCols, "linkedin")
+	}
+	if input.YearsOfExperience != nil {
+		trainer.YearsOfExperience = *input.YearsOfExperience
+		updatedCols = append(updatedCols, "year_of_experience")
+	}
 
 	ua := time.Now().Unix()
 	if len(updatedCols) > 0 {
@@ -158,16 +198,21 @@ func UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 	updatedAt := strconv.Itoa(int(ua))
 	ca := strconv.Itoa(int(trainer.CreatedAt))
 	res := model.Trainer{
-		ID:        &trainer.TrainerId,
-		LspID:     &trainer.LspId,
-		UserID:    &trainer.UserId,
-		VendorID:  &trainer.VendorId,
-		Expertise: exp,
-		Status:    &trainer.Status,
-		UpdatedAt: &updatedAt,
-		UpdatedBy: &email,
-		CreatedAt: &ca,
-		CreatedBy: &trainer.CreatedBy,
+		ID:                &trainer.TrainerId,
+		LspID:             &trainer.LspId,
+		UserID:            &trainer.UserId,
+		VendorID:          &trainer.VendorId,
+		Expertise:         exp,
+		Status:            &trainer.Status,
+		Website:           &trainer.Website,
+		Github:            &trainer.Github,
+		Linkedin:          &trainer.LinkedIn,
+		YearsOfExperience: &trainer.YearsOfExperience,
+		Description:       &trainer.Description,
+		UpdatedAt:         &updatedAt,
+		UpdatedBy:         &email,
+		CreatedAt:         &ca,
+		CreatedBy:         &trainer.CreatedBy,
 	}
 
 	return &res, nil
@@ -261,16 +306,21 @@ func GetTrainerData(ctx context.Context, lspID *string, vendorID *string, pageCu
 			ua := strconv.Itoa(int(trainer.UpdatedAt))
 			ca := strconv.Itoa(int(trainer.CreatedAt))
 			tmp := model.Trainer{
-				ID:        &trainer.TrainerId,
-				LspID:     &trainer.LspId,
-				UserID:    &trainer.UserId,
-				VendorID:  &trainer.VendorId,
-				Expertise: exp,
-				Status:    &trainer.Status,
-				UpdatedAt: &ua,
-				UpdatedBy: &trainer.UpdatedBy,
-				CreatedAt: &ca,
-				CreatedBy: &trainer.CreatedBy,
+				ID:                &trainer.TrainerId,
+				LspID:             &trainer.LspId,
+				UserID:            &trainer.UserId,
+				VendorID:          &trainer.VendorId,
+				Expertise:         exp,
+				Status:            &trainer.Status,
+				YearsOfExperience: &trainer.YearsOfExperience,
+				Website:           &trainer.Website,
+				Linkedin:          &trainer.LinkedIn,
+				Github:            &trainer.Github,
+				Description:       &trainer.Description,
+				UpdatedAt:         &ua,
+				UpdatedBy:         &trainer.UpdatedBy,
+				CreatedAt:         &ca,
+				CreatedBy:         &trainer.CreatedBy,
 			}
 			res[k] = &tmp
 		}(kk, vv)

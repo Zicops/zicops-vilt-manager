@@ -117,6 +117,11 @@ input TrainerInput {
   vendor_id: String
   expertise: [String]
   status: String
+  years_of_experience: String
+  website: String
+  linkedin: String
+  github: String
+  description: String
 }
 
 type Trainer {
@@ -126,6 +131,11 @@ type Trainer {
   vendor_id: String
   expertise: [String]
   status: String
+  years_of_experience: String
+  website: String
+  linkedin: String
+  github: String
+  description: String
   created_at: String
   created_by: String
   updated_at: String
