@@ -192,4 +192,5 @@ type Query {
   getTrainerById(id: String): Trainer
   getAllRegistrations(course_id: String, pageCursor: String, Direction: String, pageSize: Int): PaginatedUserCourseRegister
   getRegistrationDetails(id: String): UserCourseRegister
+  getCourseTrainers(course_id: String): [String]
 }

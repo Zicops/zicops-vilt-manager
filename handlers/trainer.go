@@ -339,3 +339,7 @@ func GetTrainerByID(ctx context.Context, id *string) (*model.Trainer, error) {
 
 //media server- gcs bucket redirection, link
 //local recording, to gcs
+
+func GetCourseTrainers(ctx context.Context, courseID *string) ([]*string, error) {
+	return nil, nil
+}
