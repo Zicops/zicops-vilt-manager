@@ -172,6 +172,50 @@ type PaginatedUserCourseRegister {
   pageSize: Int
 }
 
+type Course {
+  id: ID
+  name: String
+  lspId: String
+  publisher: String
+  description: String
+  summary: String
+  instructor: String
+  image: String
+  previewVideo: String
+  tileImage: String
+  owner: String
+  duration: Int
+  expertise_level: String
+  language: [String]
+  benefits: [String]
+  outcomes: [String]
+  created_at: String
+  updated_at: String
+  type: String
+  prequisites: [String]
+  goodFor: [String]
+  mustFor: [String]
+  related_skills: [String]
+  publish_date: String
+  expiry_date: String
+  expected_completion: String
+  qa_required: Boolean
+  approvers: [String]
+  created_by: String
+  updated_by: String
+  status: String
+  is_display: Boolean
+  category: String
+  sub_category: String
+  sub_categories: [sub_categories]
+  is_active: Boolean
+}
+
+type sub_categories {
+  name: String
+  rank: Int
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
@@ -192,5 +236,5 @@ type Query {
   getTrainerById(id: String): Trainer
   getAllRegistrations(course_id: String, pageCursor: String, Direction: String, pageSize: Int): PaginatedUserCourseRegister
   getRegistrationDetails(id: String): UserCourseRegister
-  getCourseTrainers(course_id: String): [String]
+  getTrainerCourses(user_id: String): [Course]
 }

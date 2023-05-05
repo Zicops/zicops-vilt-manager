@@ -7,10 +7,15 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/google/uuid"
+	"github.com/zicops/contracts/coursez"
 	"github.com/zicops/contracts/viltz"
 	"github.com/zicops/zicops-vilt-manager/global"
 	"github.com/zicops/zicops-vilt-manager/graph/model"
+	"github.com/zicops/zicops-vilt-manager/lib/db/bucket"
+	"github.com/zicops/zicops-vilt-manager/lib/googleprojectlib"
 	"github.com/zicops/zicops-vilt-manager/lib/identity"
 )
 
@@ -334,12 +339,241 @@ func GetTrainerByID(ctx context.Context, id *string) (*model.Trainer, error) {
 	return &res, nil
 }
 
-//low standard high hd
-//tile view, grid view
+func GetTrainerCourses(ctx context.Context, userID *string) ([]*model.Course, error) {
+	if userID == nil || *userID == "" {
+		return nil, fmt.Errorf("please enter userId")
+	}
+	_, err := identity.GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-//media server- gcs bucket redirection, link
-//local recording, to gcs
+	session, err := global.CassPool.GetSession(ctx, "viltz")
+	if err != nil {
+		return nil, err
+	}
+	CassViltSession := session
 
-func GetCourseTrainers(ctx context.Context, courseID *string) ([]*string, error) {
-	return nil, nil
+	qryStr := fmt.Sprintf(`SELECT * FROM viltz.trainer WHERE user_id='%s' ALLOW FILTERING`, *userID)
+	getTrainer := func() (trainersData []viltz.ViltTrainer, err error) {
+		q := CassViltSession.Query(qryStr, nil)
+		defer q.Release()
+		iter := q.Iter()
+		return trainersData, iter.Select(&trainersData)
+	}
+
+	trainers, err := getTrainer()
+	if err != nil {
+		return nil, err
+	}
+	if len(trainers) == 0 {
+		return nil, nil
+	}
+	trainer := trainers[0]
+
+	query := fmt.Sprintf(`SELECT * FROM viltz.topic_classroom WHERE trainer CONTAINS '%s' ALLOW FILTERING`, trainer.TrainerId)
+	getTopicClassroomData := func() (topicsData []viltz.TopicClassroom, err error) {
+		q := CassViltSession.Query(query, nil)
+		defer q.Release()
+		iter := q.Iter()
+		return topicsData, iter.Select(&topicsData)
+	}
+
+	topicClassrooms, err := getTopicClassroomData()
+	if err != nil {
+		log.Printf("Got error while getting topic classroom data: %v", err)
+		return nil, err
+	}
+	if len(topicClassrooms) == 0 {
+		return nil, err
+	}
+
+	res := make([]*model.Course, len(topicClassrooms))
+	var wg sync.WaitGroup
+	for kk, vvv := range topicClassrooms {
+		vv := vvv
+		wg.Add(1)
+		go func(k int, v viltz.TopicClassroom, ctx context.Context) {
+			defer wg.Done()
+			course := getCourse(ctx, v.TopicId)
+			if course == nil {
+				return
+			}
+			res[k] = course
+		}(kk, vv, ctx)
+	}
+	wg.Wait()
+
+	//remove redundant courses
+	var response []*model.Course
+	flags := make(map[string]bool)
+	for _, vv := range res {
+		v := vv
+		if flags[*v.ID] {
+			continue
+		}
+		response = append(response, v)
+		flags[*v.ID] = true
+	}
+
+	return response, nil
+}
+
+func getCourse(ctx context.Context, topicId string) *model.Course {
+	session, err := global.CassPool.GetSession(ctx, "coursez")
+	if err != nil {
+		log.Printf("Got error while getting session: %v", err)
+		return nil
+	}
+	CassCoursezSession := session
+
+	qryStr := fmt.Sprintf(`SELECT * FROM coursez.topic WHERE id='%s' ALLOW FILTERING`, topicId)
+	getTopicDetails := func() (topics []coursez.Topic, err error) {
+		q := CassCoursezSession.Query(qryStr, nil)
+		defer q.Release()
+		iter := q.Iter()
+		return topics, iter.Select(&topics)
+	}
+
+	topics, err := getTopicDetails()
+	if err != nil {
+		log.Printf("Got error while getting topic details: %v", err)
+		return nil
+	}
+	if len(topics) == 0 {
+		return nil
+	}
+	query := fmt.Sprintf(`SELECT * FROM coursez.course WHERE id='%s' ALLOW FILTERING`, topics[0].CourseID)
+	getCourseDetails := func() (courseDetails []coursez.Course, err error) {
+		q := CassCoursezSession.Query(query, nil)
+		defer q.Release()
+		iter := q.Iter()
+		return courseDetails, iter.Select(&courseDetails)
+	}
+	courses, err := getCourseDetails()
+	if err != nil {
+		log.Printf("Got error while getting course details: %v", err)
+		return nil
+	}
+	if len(courses) == 0 {
+		return nil
+	}
+	course := courses[0]
+	createdAt := strconv.FormatInt(course.CreatedAt, 10)
+	updatedAt := strconv.FormatInt(course.UpdatedAt, 10)
+	language := make([]*string, 0)
+	takeaways := make([]*string, 0)
+	outcomes := make([]*string, 0)
+	prequisites := make([]*string, 0)
+	goodFor := make([]*string, 0)
+	mustFor := make([]*string, 0)
+	relatedSkills := make([]*string, 0)
+	approvers := make([]*string, 0)
+	subCatsRes := make([]*model.SubCategories, 0)
+
+	for _, lang := range course.Language {
+		langCopied := lang
+		language = append(language, &langCopied)
+	}
+	for _, take := range course.Benefits {
+		takeCopied := take
+		takeaways = append(takeaways, &takeCopied)
+	}
+	for _, out := range course.Outcomes {
+		outCopied := out
+		outcomes = append(outcomes, &outCopied)
+	}
+	for _, preq := range course.Prequisites {
+		preCopied := preq
+		prequisites = append(prequisites, &preCopied)
+	}
+	for _, good := range course.GoodFor {
+		goodCopied := good
+		goodFor = append(goodFor, &goodCopied)
+	}
+	for _, must := range course.MustFor {
+		mustCopied := must
+		mustFor = append(mustFor, &mustCopied)
+	}
+	for _, relSkill := range course.RelatedSkills {
+		relCopied := relSkill
+		relatedSkills = append(relatedSkills, &relCopied)
+	}
+	for _, approver := range course.Approvers {
+		appoverCopied := approver
+		approvers = append(approvers, &appoverCopied)
+	}
+	for _, subCat := range course.SubCategories {
+		subCopied := subCat
+		var subCR model.SubCategories
+		subCR.Name = &subCopied.Name
+		subCR.Rank = &subCopied.Rank
+		subCatsRes = append(subCatsRes, &subCR)
+	}
+
+	storageC := bucket.NewStorageHandler()
+	gproject := googleprojectlib.GetGoogleProjectID()
+	err = storageC.InitializeStorageClient(ctx, gproject)
+	if err != nil {
+		log.Errorf("Failed to initialize storage: %v", err.Error())
+		return nil
+	}
+	tileUrl := course.TileImage
+	if course.TileImageBucket != "" {
+		tileUrl = storageC.GetSignedURLForObject(ctx, course.TileImageBucket)
+	}
+	imageUrl := course.Image
+	if course.ImageBucket != "" {
+		imageUrl = storageC.GetSignedURLForObject(ctx, course.ImageBucket)
+	}
+	previewUrl := course.PreviewVideo
+	if course.PreviewVideoBucket != "" {
+		previewUrl = storageC.GetSignedURLForObject(ctx, course.PreviewVideoBucket)
+	}
+	currentCourse := model.Course{
+		ID:                 &course.ID,
+		Name:               &course.Name,
+		LspID:              &course.LspId,
+		Publisher:          &course.Publisher,
+		Description:        &course.Description,
+		Summary:            &course.Summary,
+		Instructor:         &course.Instructor,
+		Owner:              &course.Owner,
+		Duration:           &course.Duration,
+		ExpertiseLevel:     &course.ExpertiseLevel,
+		Language:           language,
+		Benefits:           takeaways,
+		Outcomes:           outcomes,
+		CreatedAt:          &createdAt,
+		UpdatedAt:          &updatedAt,
+		Type:               &course.Type,
+		Prequisites:        prequisites,
+		GoodFor:            goodFor,
+		MustFor:            mustFor,
+		RelatedSkills:      relatedSkills,
+		PublishDate:        &course.PublishDate,
+		ExpiryDate:         &course.ExpiryDate,
+		ExpectedCompletion: &course.ExpectedCompletion,
+		QaRequired:         &course.QARequired,
+		Approvers:          approvers,
+		CreatedBy:          &course.CreatedBy,
+		UpdatedBy:          &course.UpdatedBy,
+		Status:             &course.Status,
+		IsDisplay:          &course.IsDisplay,
+		Category:           &course.Category,
+		SubCategory:        &course.SubCategory,
+		SubCategories:      subCatsRes,
+		IsActive:           &course.IsActive,
+	}
+	if course.TileImageBucket != "" {
+		currentCourse.TileImage = &tileUrl
+	}
+	if course.ImageBucket != "" {
+		currentCourse.Image = &imageUrl
+	}
+	if course.PreviewVideoBucket != "" {
+		currentCourse.PreviewVideo = &previewUrl
+	}
+
+	return &currentCourse
 }
