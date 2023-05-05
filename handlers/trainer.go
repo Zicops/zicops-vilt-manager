@@ -100,7 +100,7 @@ func UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 	}
 	CassSession := session
 
-	qryStr := fmt.Sprintf(`SELECT * FROM vendorz.trainer WHERE id='%s'`, *input.ID)
+	qryStr := fmt.Sprintf(`SELECT * FROM viltz.trainer WHERE id='%s'`, *input.ID)
 	getTrainerData := func() (data []viltz.ViltTrainer, err error) {
 		q := CassSession.Query(qryStr, nil)
 		defer q.Release()
