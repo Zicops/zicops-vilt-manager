@@ -171,11 +171,11 @@ func (r *queryResolver) GetRegistrationDetails(ctx context.Context, id *string) 
 	return resp, nil
 }
 
-// GetCourseTrainers is the resolver for the getCourseTrainers field.
-func (r *queryResolver) GetCourseTrainers(ctx context.Context, courseID *string) ([]*string, error) {
-	resp, err := handlers.GetCourseTrainers(ctx, courseID)
+// GetTrainerCourses is the resolver for the getTrainerCourses field.
+func (r *queryResolver) GetTrainerCourses(ctx context.Context, userID *string) ([]*model.Course, error) {
+	resp, err := handlers.GetTrainerCourses(ctx, userID)
 	if err != nil {
-		log.Printf("Got error while getting trainers for course: %v", err)
+		log.Printf("Got error while getting trainer courses: %v", err)
 		return nil, err
 	}
 	return resp, nil

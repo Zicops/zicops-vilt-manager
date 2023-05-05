@@ -2,6 +2,45 @@
 
 package model
 
+type Course struct {
+	ID                 *string          `json:"id"`
+	Name               *string          `json:"name"`
+	LspID              *string          `json:"lspId"`
+	Publisher          *string          `json:"publisher"`
+	Description        *string          `json:"description"`
+	Summary            *string          `json:"summary"`
+	Instructor         *string          `json:"instructor"`
+	Image              *string          `json:"image"`
+	PreviewVideo       *string          `json:"previewVideo"`
+	TileImage          *string          `json:"tileImage"`
+	Owner              *string          `json:"owner"`
+	Duration           *int             `json:"duration"`
+	ExpertiseLevel     *string          `json:"expertise_level"`
+	Language           []*string        `json:"language"`
+	Benefits           []*string        `json:"benefits"`
+	Outcomes           []*string        `json:"outcomes"`
+	CreatedAt          *string          `json:"created_at"`
+	UpdatedAt          *string          `json:"updated_at"`
+	Type               *string          `json:"type"`
+	Prequisites        []*string        `json:"prequisites"`
+	GoodFor            []*string        `json:"goodFor"`
+	MustFor            []*string        `json:"mustFor"`
+	RelatedSkills      []*string        `json:"related_skills"`
+	PublishDate        *string          `json:"publish_date"`
+	ExpiryDate         *string          `json:"expiry_date"`
+	ExpectedCompletion *string          `json:"expected_completion"`
+	QaRequired         *bool            `json:"qa_required"`
+	Approvers          []*string        `json:"approvers"`
+	CreatedBy          *string          `json:"created_by"`
+	UpdatedBy          *string          `json:"updated_by"`
+	Status             *string          `json:"status"`
+	IsDisplay          *bool            `json:"is_display"`
+	Category           *string          `json:"category"`
+	SubCategory        *string          `json:"sub_category"`
+	SubCategories      []*SubCategories `json:"sub_categories"`
+	IsActive           *bool            `json:"is_active"`
+}
+
 type PaginatedTrainer struct {
 	Trainers   []*Trainer `json:"trainers"`
 	PageCursor *string    `json:"pageCursor"`
@@ -174,4 +213,9 @@ type ViltInput struct {
 	BookingPublishBy      *string   `json:"booking_publish_by"`
 	RegistrationStartDate *int      `json:"registration_start_date"`
 	Status                *string   `json:"status"`
+}
+
+type SubCategories struct {
+	Name *string `json:"name"`
+	Rank *int    `json:"rank"`
 }
