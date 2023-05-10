@@ -181,7 +181,7 @@ func UpdateTrainerData(ctx context.Context, input *model.TrainerInput) (*model.T
 	if len(updatedCols) > 0 {
 		trainer.UpdatedAt = ua
 		trainer.UpdatedBy = email
-		updatedCols = append(updatedCols, "updated_at", "updated_by")
+		updatedCols = append(updatedCols, "updated_at", "updatedby")
 		stmt, names := viltz.ViltTrainerTable.Update(updatedCols...)
 		updatedQuery := CassSession.Query(stmt, names).BindStruct(&trainer)
 		if err = updatedQuery.ExecRelease(); err != nil {
