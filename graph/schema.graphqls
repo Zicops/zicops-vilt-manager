@@ -226,6 +226,19 @@ type sub_categories {
   rank: Int
 }
 
+type TopicAttendance {
+  topic_id: String
+  course_id: String
+  user_id: String
+  first_join_time: String
+  last_leave_time: String
+  duration: Int
+  retention: String
+  category: String
+  sub_categories: [String]
+  date_value: String
+}
+
 type Mutation {
   createViltData(input: ViltInput): Vilt
   updateViltData(input: ViltInput): Vilt
@@ -247,4 +260,5 @@ type Query {
   getAllRegistrations(course_id: String, pageCursor: String, Direction: String, pageSize: Int): PaginatedUserCourseRegister
   getRegistrationDetails(id: String): UserCourseRegister
   getTrainerCourses(user_id: String): [Course]
+  getTopicAttendance(topic_id: String!): [TopicAttendance]
 }

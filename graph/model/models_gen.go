@@ -55,6 +55,19 @@ type PaginatedUserCourseRegister struct {
 	PageSize   *int                  `json:"pageSize"`
 }
 
+type TopicAttendance struct {
+	TopicID       *string   `json:"topic_id"`
+	CourseID      *string   `json:"course_id"`
+	UserID        *string   `json:"user_id"`
+	FirstJoinTime *string   `json:"first_join_time"`
+	LastLeaveTime *string   `json:"last_leave_time"`
+	Duration      *int      `json:"duration"`
+	Retention     *string   `json:"retention"`
+	Category      *string   `json:"category"`
+	SubCategories []*string `json:"sub_categories"`
+	DateValue     *string   `json:"date_value"`
+}
+
 type TopicClassroom struct {
 	ID                   *string   `json:"id"`
 	TopicID              *string   `json:"topic_id"`

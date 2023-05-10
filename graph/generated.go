@@ -111,6 +111,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetAllRegistrations          func(childComplexity int, courseID *string, pageCursor *string, direction *string, pageSize *int) int
 		GetRegistrationDetails       func(childComplexity int, id *string) int
+		GetTopicAttendance           func(childComplexity int, topicID string) int
 		GetTopicClassroom            func(childComplexity int, topicID *string) int
 		GetTopicClassroomsByTopicIds func(childComplexity int, topicIds []*string) int
 		GetTrainerByID               func(childComplexity int, id *string) int
@@ -118,6 +119,19 @@ type ComplexityRoot struct {
 		GetTrainerData               func(childComplexity int, lspID *string, vendorID *string, pageCursor *string, direction *string, pageSize *int, filters *model.TrainerFilters) int
 		GetViltData                  func(childComplexity int, courseID *string) int
 		GetViltDataByID              func(childComplexity int, id *string) int
+	}
+
+	TopicAttendance struct {
+		Category      func(childComplexity int) int
+		CourseID      func(childComplexity int) int
+		DateValue     func(childComplexity int) int
+		Duration      func(childComplexity int) int
+		FirstJoinTime func(childComplexity int) int
+		LastLeaveTime func(childComplexity int) int
+		Retention     func(childComplexity int) int
+		SubCategories func(childComplexity int) int
+		TopicID       func(childComplexity int) int
+		UserID        func(childComplexity int) int
 	}
 
 	TopicClassroom struct {
@@ -236,6 +250,7 @@ type QueryResolver interface {
 	GetAllRegistrations(ctx context.Context, courseID *string, pageCursor *string, direction *string, pageSize *int) (*model.PaginatedUserCourseRegister, error)
 	GetRegistrationDetails(ctx context.Context, id *string) (*model.UserCourseRegister, error)
 	GetTrainerCourses(ctx context.Context, userID *string) ([]*model.Course, error)
+	GetTopicAttendance(ctx context.Context, topicID string) ([]*model.TopicAttendance, error)
 }
 
 type executableSchema struct {
@@ -681,6 +696,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetRegistrationDetails(childComplexity, args["id"].(*string)), true
 
+	case "Query.getTopicAttendance":
+		if e.complexity.Query.GetTopicAttendance == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTopicAttendance_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTopicAttendance(childComplexity, args["topic_id"].(string)), true
+
 	case "Query.getTopicClassroom":
 		if e.complexity.Query.GetTopicClassroom == nil {
 			break
@@ -764,6 +791,76 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetViltDataByID(childComplexity, args["id"].(*string)), true
+
+	case "TopicAttendance.category":
+		if e.complexity.TopicAttendance.Category == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.Category(childComplexity), true
+
+	case "TopicAttendance.course_id":
+		if e.complexity.TopicAttendance.CourseID == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.CourseID(childComplexity), true
+
+	case "TopicAttendance.date_value":
+		if e.complexity.TopicAttendance.DateValue == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.DateValue(childComplexity), true
+
+	case "TopicAttendance.duration":
+		if e.complexity.TopicAttendance.Duration == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.Duration(childComplexity), true
+
+	case "TopicAttendance.first_join_time":
+		if e.complexity.TopicAttendance.FirstJoinTime == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.FirstJoinTime(childComplexity), true
+
+	case "TopicAttendance.last_leave_time":
+		if e.complexity.TopicAttendance.LastLeaveTime == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.LastLeaveTime(childComplexity), true
+
+	case "TopicAttendance.retention":
+		if e.complexity.TopicAttendance.Retention == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.Retention(childComplexity), true
+
+	case "TopicAttendance.sub_categories":
+		if e.complexity.TopicAttendance.SubCategories == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.SubCategories(childComplexity), true
+
+	case "TopicAttendance.topic_id":
+		if e.complexity.TopicAttendance.TopicID == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.TopicID(childComplexity), true
+
+	case "TopicAttendance.user_id":
+		if e.complexity.TopicAttendance.UserID == nil {
+			break
+		}
+
+		return e.complexity.TopicAttendance.UserID(childComplexity), true
 
 	case "TopicClassroom.breaktime":
 		if e.complexity.TopicClassroom.Breaktime == nil {
@@ -1606,6 +1703,21 @@ func (ec *executionContext) field_Query_getRegistrationDetails_args(ctx context.
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTopicAttendance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["topic_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic_id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["topic_id"] = arg0
 	return args, nil
 }
 
@@ -5241,6 +5353,80 @@ func (ec *executionContext) fieldContext_Query_getTrainerCourses(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getTopicAttendance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getTopicAttendance(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTopicAttendance(rctx, fc.Args["topic_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TopicAttendance)
+	fc.Result = res
+	return ec.marshalOTopicAttendance2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicAttendance(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getTopicAttendance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "topic_id":
+				return ec.fieldContext_TopicAttendance_topic_id(ctx, field)
+			case "course_id":
+				return ec.fieldContext_TopicAttendance_course_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_TopicAttendance_user_id(ctx, field)
+			case "first_join_time":
+				return ec.fieldContext_TopicAttendance_first_join_time(ctx, field)
+			case "last_leave_time":
+				return ec.fieldContext_TopicAttendance_last_leave_time(ctx, field)
+			case "duration":
+				return ec.fieldContext_TopicAttendance_duration(ctx, field)
+			case "retention":
+				return ec.fieldContext_TopicAttendance_retention(ctx, field)
+			case "category":
+				return ec.fieldContext_TopicAttendance_category(ctx, field)
+			case "sub_categories":
+				return ec.fieldContext_TopicAttendance_sub_categories(ctx, field)
+			case "date_value":
+				return ec.fieldContext_TopicAttendance_date_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TopicAttendance", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getTopicAttendance_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -5365,6 +5551,416 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_topic_id(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_topic_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TopicID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_topic_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_course_id(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_course_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CourseID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_course_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_user_id(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_first_join_time(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_first_join_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FirstJoinTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_first_join_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_last_leave_time(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_last_leave_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastLeaveTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_last_leave_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_duration(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_duration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_retention(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_retention(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Retention, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_retention(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_category(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_category(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_sub_categories(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_sub_categories(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SubCategories, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_sub_categories(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TopicAttendance_date_value(ctx context.Context, field graphql.CollectedField, obj *model.TopicAttendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TopicAttendance_date_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateValue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TopicAttendance_date_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TopicAttendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11567,6 +12163,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getTopicAttendance":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTopicAttendance(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -11578,6 +12194,67 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var topicAttendanceImplementors = []string{"TopicAttendance"}
+
+func (ec *executionContext) _TopicAttendance(ctx context.Context, sel ast.SelectionSet, obj *model.TopicAttendance) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, topicAttendanceImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TopicAttendance")
+		case "topic_id":
+
+			out.Values[i] = ec._TopicAttendance_topic_id(ctx, field, obj)
+
+		case "course_id":
+
+			out.Values[i] = ec._TopicAttendance_course_id(ctx, field, obj)
+
+		case "user_id":
+
+			out.Values[i] = ec._TopicAttendance_user_id(ctx, field, obj)
+
+		case "first_join_time":
+
+			out.Values[i] = ec._TopicAttendance_first_join_time(ctx, field, obj)
+
+		case "last_leave_time":
+
+			out.Values[i] = ec._TopicAttendance_last_leave_time(ctx, field, obj)
+
+		case "duration":
+
+			out.Values[i] = ec._TopicAttendance_duration(ctx, field, obj)
+
+		case "retention":
+
+			out.Values[i] = ec._TopicAttendance_retention(ctx, field, obj)
+
+		case "category":
+
+			out.Values[i] = ec._TopicAttendance_category(ctx, field, obj)
+
+		case "sub_categories":
+
+			out.Values[i] = ec._TopicAttendance_sub_categories(ctx, field, obj)
+
+		case "date_value":
+
+			out.Values[i] = ec._TopicAttendance_date_value(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12798,6 +13475,54 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTopicAttendance2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicAttendance(ctx context.Context, sel ast.SelectionSet, v []*model.TopicAttendance) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTopicAttendance2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicAttendance(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOTopicAttendance2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicAttendance(ctx context.Context, sel ast.SelectionSet, v *model.TopicAttendance) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TopicAttendance(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOTopicClassroom2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑviltᚑmanagerᚋgraphᚋmodelᚐTopicClassroom(ctx context.Context, sel ast.SelectionSet, v []*model.TopicClassroom) graphql.Marshaler {

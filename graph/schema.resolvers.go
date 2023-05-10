@@ -181,6 +181,16 @@ func (r *queryResolver) GetTrainerCourses(ctx context.Context, userID *string) (
 	return resp, nil
 }
 
+// GetTopicAttendance is the resolver for the getTopicAttendance field.
+func (r *queryResolver) GetTopicAttendance(ctx context.Context, topicID string) ([]*model.TopicAttendance, error) {
+	resp, err := handlers.GetTopicAttendance(ctx, topicID)
+	if err != nil {
+		log.Printf("Got error while getting attendance: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
